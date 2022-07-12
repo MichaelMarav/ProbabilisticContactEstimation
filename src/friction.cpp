@@ -31,21 +31,32 @@ int main(int argc, char **argv)
   ros::Subscriber sub_forces = nh.subscribe("/atlas_raisim_ros/LLeg/force_torque_states",1000,forceCallback);
 
 
-  int contact_label;
-
+  int curr_contact_label;
+  int prev_contact_label;
   while (ros::ok()){
   
-    std::cout << contact.data << "\n";
-    switch (contact.data){
-      case "stable_contact":
-        contact_label = 0;
+    // std::cout << contact.data << "\n";
+    // switch (contact.data){
+    //   case "stable_contact":
+    //     curr_contact_label = 0;
+    // }
+    // std::cout << contact.data << '\n';
+    if (contact.data == "stable_contact"){
+      curr_contact_label = 0;
+    }else if (contact.data == "slip"){
+      curr_contact_label = 1;
+    }else{
+      curr_contact_label = 2;
     }
 
-    if (contact.data == "stable_contact"){
-      contact_label = 0;
-    }else if (contact.data == "slip"){
-      contact_label = 1;
-    }else{}
+    if (curr_contact_label == 1 && prev_contact_label == 0){
+      auto Fx = force.wrench.force.x;
+      auto Fy = force.wrench.force.y;    
+      auto Fz = force.wrench.force.z;
+      std::cout << "mu = " << std::pow(Fx*Fx + Fy*Fy,0.5)/Fz << '\n';
+    }
+
+    prev_contact_label = curr_contact_label;
     ros::spinOnce();
 
   }
