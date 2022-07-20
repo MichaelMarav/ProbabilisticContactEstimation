@@ -1,0 +1,7 @@
+dataset collected from raisim, 
+ATLAS robot locomotion using  LIPM locomotion
+Variety of friction coefficient, each csv different friction coefficient
+for the Right foot of atlas
+
+Labels for stable contact are produced using coulomb friction  model
+Each .csv is 20 steps long

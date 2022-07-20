@@ -26,9 +26,9 @@ int main(int argc, char **argv)
 
   ros::NodeHandle nh;
 
-  ros::Subscriber sub_contact = nh.subscribe("/atlas_raisim_ros/LLeg/contact_status",1000,contactCallback);
+  ros::Subscriber sub_contact = nh.subscribe("/atlas_raisim_ros/RLeg/contact_status",1000,contactCallback);
 
-  ros::Subscriber sub_forces = nh.subscribe("/atlas_raisim_ros/LLeg/force_torque_states",1000,forceCallback);
+  ros::Subscriber sub_forces = nh.subscribe("/atlas_raisim_ros/RLeg/force_torque_states",1000,forceCallback);
 
 
   int curr_contact_label;
@@ -54,6 +54,7 @@ int main(int argc, char **argv)
       auto Fy = force.wrench.force.y;    
       auto Fz = force.wrench.force.z;
       std::cout << "mu = " << std::pow(Fx*Fx + Fy*Fy,0.5)/Fz << '\n';
+      std::cout << "Fx = " << Fx << "  Fy =" <<  Fy << "  Fz = " << Fz  <<'\n';
     }
 
     prev_contact_label = curr_contact_label;
