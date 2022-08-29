@@ -4,9 +4,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from numpy import genfromtxt
 
-filename = "../data/atlas_1000hz_01ground.csv" 
-start = 2000
-stop  = 15000
+filename = "../data/atlas_1000hz_01ground_3steps.csv" 
+start = 0
+stop  = 15259
 
 '''
 Input:
@@ -48,27 +48,31 @@ def main():
     labels_ay = transform_labels(data[:,7],data[:,-1])
     labels_az = transform_labels(data[:,8],data[:,-1])
 
-    
-    # Plot forces
-    fig, ax = plt.subplots(3)
-    ax[0].plot(time,data[start:stop,0])  # Fz 
-    ax[1].plot(time,data[start:stop,1])  # ax
-    ax[2].plot(time,data[start:stop,2])  # ay
+    total_xy = np.sqrt(data[:,0]**2+ data[:,1]**2) 
 
-    ax[0].scatter(time,labels_fx[start:stop],c = 'g',s = 5)
-    ax[1].scatter(time,labels_fy[start:stop],c = 'g',s = 5)
-    ax[2].scatter(time,labels_fz[start:stop],c = 'g',s = 5)
+    plt.plot(time,total_xy,c='r')
+    plt.plot(time,0.1*data[:,2],c='b')
+    plt.scatter(time,0.1*labels_fz,c = 'g',s = 5)
+    # Plot forces
+    # fig, ax = plt.subplots(3)
+    # ax[0].plot(time,data[start:stop,0])  # Fz 
+    # ax[1].plot(time,data[start:stop,1])  # ax
+    # ax[2].plot(time,data[start:stop,2])  # ay
+
+    # ax[0].scatter(time,labels_fx[start:stop],c = 'g',s = 5)
+    # ax[1].scatter(time,labels_fy[start:stop],c = 'g',s = 5)
+    # ax[2].scatter(time,labels_fz[start:stop],c = 'g',s = 5)
 
 
     # Plot accelerations
-    fig1, ax1 = plt.subplots(3)
-    ax1[0].plot(time,data[start:stop,6])  # ay
-    ax1[1].plot(time,data[start:stop,7])  # ay
-    ax1[2].plot(time,data[start:stop,8])  # ay
+    # fig1, ax1 = plt.subplots(3)
+    # ax1[0].plot(time,data[start:stop,6])  # ay
+    # ax1[1].plot(time,data[start:stop,7])  # ay
+    # ax1[2].plot(time,data[start:stop,8])  # ay
 
-    ax1[0].scatter(time,labels_ax[start:stop],c = 'g',s = 5)
-    ax1[1].scatter(time,labels_ay[start:stop],c = 'g',s = 5)
-    ax1[2].scatter(time,labels_az[start:stop],c = 'g',s = 5)
+    # ax1[0].scatter(time,labels_ax[start:stop],c = 'g',s = 5)
+    # ax1[1].scatter(time,labels_ay[start:stop],c = 'g',s = 5)
+    # ax1[2].scatter(time,labels_az[start:stop],c = 'g',s = 5)
     
     # ax[4].plot(time,data[start:stop,11]) # wz
 
