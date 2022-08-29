@@ -87,20 +87,23 @@ if __name__ == "__main__":
     data_ay = sp.medfilt(data[:,ay], 5)
     data_wz = sp.medfilt(data[:,wz], 5)
     data_Fz = sp.medfilt(data[:,Fz], 5)
+    fig, axs = plt.subplots(2)
 
     p = 0
     col = ['c','r','g','b','y']
+    data = add_noise(data)
 
     for i in range(150):
         start = i*100
         stop  = start + 100
         color = col[p]
         p += 1
-        plt.scatter(time[start:stop],data_ax[start:stop],c = color,s=5)
+        axs[0].scatter(time[start:stop],data_ax[start:stop],c = color,s=5)
         if p == 5:
             p = 0
-        
-
+    axs[1].plot(time,0.1*data[:,2],c = 'r')
+    Ftan = np.sqrt(data[:,0]**2 +data[:,1]**2)
+    axs[1].plot(time,Ftan,c ='b')
     # prob = contact(data)
     # fig, axs = plt.subplots(2)
     # axs[0].scatter(time,data_ax,c = 'r',s = 5)
@@ -108,14 +111,6 @@ if __name__ == "__main__":
     
     # plt.plot(time,data_ax,c = 'r')
 
-    # data = add_noise(data)
 
-    # plt.plot(time,data[:,az],c='b')
-    # P(a < x < b)
-    # a = -3*sigma
-    # b = 3*sigma
-    # f1 = cdf(mu,sigma,a)
-    # f2 = cdf(mu,sigma,b)
-
-    # print(f2-f1)
+    
     plt.show()
