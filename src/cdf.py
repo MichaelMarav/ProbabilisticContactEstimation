@@ -11,10 +11,12 @@ filename = "../data/atlas_1000hz_01ground_3steps.csv"
 Fx,Fy,Fz,Tx,Ty,Tz = 0,1,2,3,4,5
 ax,ay,az,wx,wy,wz = 6,7,8,9,10,11
 
-mu = 0
 sigma_a = 0.02467
 sigma_w = 0.01653
 sigma_F = 2
+
+
+subset_size = 100
 
 def cdf(mu,sigma,x):
     a = (x-mu)/(sigma*math.sqrt(2))
@@ -25,15 +27,15 @@ def add_noise(data):
 
     for i in range (data.shape[0]):
         for j in range (3):
-            data[i,j] += np.random.normal(mu,sigma_F)
+            data[i,j] += np.random.normal(0,sigma_F)
     
     for i in range (data.shape[0]):
         for j in range (6,9):
-            data[i,j] += np.random.normal(mu,sigma_a)
+            data[i,j] += np.random.normal(0,sigma_a)
     
     for i in range (data.shape[0]):
         for j in range (9,12):
-            data[i,j] += np.random.normal(mu,sigma_w)
+            data[i,j] += np.random.normal(0,sigma_w)
     
     return data
 
@@ -77,16 +79,72 @@ def add_noise(data):
 
     # return Prob
 
+def mle_means(v):
+    means = np.empty((v.shape[0]//subset_size,))
+    sum_x = 0 
+    for i in range(1,v.shape[0]):
+        if (i+1)%subset_size == 0:
+            print("means computed  ->  ", i)
+            sum_x += v[i]
+            means[(i+1)//subset_size - 1] = sum_x/subset_size
+            sum_x = 0
+        else:
+            sum_x += v[i] 
+    return means
 
 if __name__ == "__main__":
 
     data = genfromtxt(filename,delimiter = ",")
+    del_list = np.arange(-59,0,1)
+    data = np.delete(data,del_list, axis = 0)
+    data = add_noise(data)
     time = np.arange(data.shape[0])
 
+    # Use median to filter out spikes
     data_ax = sp.medfilt(data[:,ax], 5)
     data_ay = sp.medfilt(data[:,ay], 5)
+    data_az = sp.medfilt(data[:,az], 5)
+    data_wx = sp.medfilt(data[:,wx], 5)
+    data_wy = sp.medfilt(data[:,wy], 5)
     data_wz = sp.medfilt(data[:,wz], 5)
-    data_Fz = sp.medfilt(data[:,Fz], 5)
+    data_Fx = sp.medfilt(data[:,Fx], 5) 
+    data_Fy = sp.medfilt(data[:,Fy], 5) 
+    data_Fz = sp.medfilt(data[:,Fz], 5) 
+
+    
+    means_ax = mle_means(data_ax)
+    means_ay = mle_means(data_ay)
+    means_az = mle_means(data_az)
+    means_wx = mle_means(data_wx)
+    means_wy = mle_means(data_wy)
+    means_wz = mle_means(data_wz)
+    means_Fx = mle_means(data_Fx)
+    means_Fy = mle_means(data_Fy)
+    means_Fz = mle_means(data_Fz)
+    sub_time = np.arange(data.shape[0]//subset_size)
+
+    square = np.sqrt(means_Fx**2 + means_Fy**2)
+
+    # fig, axs = plt.subplots(2)
+
+    # axs[0].plot(sub_time,0.1*means_Fz,c ='r')
+    # axs[0].plot(sub_time,square,c='b')
+    
+    # axs[1].scatter(sub_time,means_ax, c = 'r',s=5)
+
+    # axs[1].axvline(x=39,c = 'r')
+    # axs[1].axvline(x=41,c = 'r')
+    # axs[0].axvline(x=39,c = 'r')
+    # axs[0].axvline(x=41,c = 'r')
+
+
+
+    # plt.show()
+
+
+
+    # PLOTS
+    
     fig, axs = plt.subplots(2)
 
     p = 0
@@ -104,13 +162,18 @@ if __name__ == "__main__":
     axs[1].plot(time,0.1*data[:,2],c = 'r')
     Ftan = np.sqrt(data[:,0]**2 +data[:,1]**2)
     axs[1].plot(time,Ftan,c ='b')
-    # prob = contact(data)
-    # fig, axs = plt.subplots(2)
-    # axs[0].scatter(time,data_ax,c = 'r',s = 5)
-    # axs[1].scatter(time,data[:,6],c = 'b',s = 5)
-    
-    # plt.plot(time,data_ax,c = 'r')
+
+    axs[1].axvline(x=4007,c = 'r')
+    axs[1].axvline(x=4195,c = 'r')
+    axs[0].axvline(x=4007,c = 'r')
+    axs[0].axvline(x=4195,c = 'r')
 
 
-    
+    axs[0].axvline(x=4600,c = 'y')
+    axs[0].axvline(x=6400,c = 'y')
+    axs[1].axvline(x=4600,c = 'y')
+    axs[1].axvline(x=6400,c = 'y')
+
     plt.show()
+
+    
