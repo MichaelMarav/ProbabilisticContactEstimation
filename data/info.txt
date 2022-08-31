@@ -5,3 +5,13 @@ for the Right foot of atlas
 
 Labels for stable contact are produced using coulomb friction  model
 Each .csv is 20 steps long
+
+----------------------------------------------
+
+go1 -> 1000 Hz 
+The "IMU" is set on the link of the foot
+time, vel_x, vel_y, vel_z , w_x , w_y , w_z
+
+
+
+
