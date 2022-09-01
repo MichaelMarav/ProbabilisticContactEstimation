@@ -6,7 +6,7 @@ from numpy import genfromtxt
 import matplotlib.pyplot as plt
 from scipy import signal as sp 
 
-filename = "../data/atlas_1000hz_01gr_003road.csv" 
+filename = "../data/atlas_1000hz_01ground.csv" 
 
 Fx,Fy,Fz,Tx,Ty,Tz = 0,1,2,3,4,5
 ax,ay,az,wx,wy,wz = 6,7,8,9,10,11
