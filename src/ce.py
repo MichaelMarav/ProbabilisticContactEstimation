@@ -59,16 +59,25 @@ def mle_means(data):
     stride = 1
     means = np.empty((data[0].shape[0],len(data)))
     sum_x = 0
-     
-    for i in range(batch_size,means.shape[0],stride):
-        for j in range(means.shape[1]):
-            means[i] 
-        batch = data
-        pass
+
+    # Compute mean for first 50 samples
+    for f in range(means.shape[1]):
+        for i in range(batch_size):
+            sum_x += data[f][i]
+        means[0:batch_size,f] = sum_x/batch_size
+    
+
+    # Compute the rest
+    for f in range(means.shape[1]):
+        feature_i = data[f]
+        for i in range(batch_size,means.shape[0],stride):
+            means[i,f] = sum(feature_i[(i-batch_size):i])/batch_size
+    return means
 
 
 if __name__ == "__main__":
 
     ax, ay, wz, fx, fy, fz = prepare_data()
     data = [ax,ay,wz,fx,fy,fz]
-    mle_means(data)
+
+    means = mle_means(data)
