@@ -30,36 +30,9 @@ friction_coef = 0.1
 def prepare_data():
 
     # Read Dataset
-    data_filename = "../data/atlas_1000hz_01ground.csv"
+    data_filename = "../data/talos_100hz.csv"
 
     data = np.genfromtxt(data_filename,delimiter=",")
-
-
-    Fx = data[:,0]
-    Fy = data[:,1]
-    Fz = data[:,2]
-
-    labels = np.empty((Fx.shape[0],))
-    for i in range(Fx.shape[0]):
-        if Fz[i] > 1 and np.sqrt(Fx[i]**2 + Fy[i]**2) -friction_coef*Fz[i] <= -contact_threshold_label:
-            labels[i] = 1
-        else: 
-            labels[i] = 0
-
-
-    # Add gaussian noise
-    for i in range (data.shape[0]):
-        for j in range (3):
-            data[i,j] += np.random.normal(0,sigma_F)
-    
-    for i in range (data.shape[0]):
-        for j in range (6,9):
-            data[i,j] += np.random.normal(0,sigma_a)
-    
-    for i in range (data.shape[0]):
-        for j in range (9,12):
-            data[i,j] += np.random.normal(0,sigma_w)
-    
 
     # Median filter to get rid of the random spikes (raisim problem)
     median_window = 7
@@ -77,7 +50,7 @@ def prepare_data():
     data[:,11]= sp.medfilt(data[:,11], median_window)
 
 
-    return data[:,6], data[:,7], data[:,11], data[:,0], data[:,1], data[:,2] , labels 
+    return data[:,6], data[:,7], data[:,11], data[:,0], data[:,1], data[:,2]  
 
 
 
@@ -150,26 +123,49 @@ def contact_probability(means):
 if __name__ == "__main__":
 
 
-    ax, ay, wz, fx, fy, fz, labels = prepare_data() 
+    ax, ay, wz, fx, fy, fz = prepare_data() 
     data = [ax,ay,wz,fx,fy,fz]
+    
+    
+    fric = np.arange(0.5,1.0,0.05)
+    
+    time = np.arange(1000)
+    fz = fz[4600:5600]
+    fx = fx[4600:5600]
+    fy = fy[4600:5600]
+    
+    plt.title("Talos")
+    fig, axs = plt.subplots(3)
+    axs[0].set_title("Fx")
+    axs[0].plot(time,fx, c='b')
 
-
-    means = mle_means(data)
-
-    probs = contact_probability(means)
-
-    Ftan = np.sqrt(data[3][:]**2+data[4][:]**2)
-
-    time = np.arange(probs.shape[0])
-
-    fig, axs = plt.subplots(2)
-    axs[0].scatter(time,probs, c='g',s=5)
-    axs[0].scatter(time,labels,c='r',s=5) # Ground truth
-
-    #axs[1].plot(time,Ftan,c ='r')
-    axs[1].plot(time,data[5][:], c= 'b')
-
-
+    axs[1].set_title("Fy")
+    axs[1].plot(time,fy, c='b') # Ground truth
+    
+    axs[2].set_title("Fz")
+    axs[2].plot(time,fz, c='b') # Ground truth
 
 
     plt.show()
+    # #axs[1].plot(time,Ftan,c ='r')
+    # axs[1].plot(time,data[5][:], c= 'b')
+    
+    # means = mle_means(data)
+
+    # probs = contact_probability(means)
+
+    # Ftan = np.sqrt(data[3][:]**2+data[4][:]**2)
+
+    # time = np.arange(probs.shape[0])
+
+    # fig, axs = plt.subplots(2)
+    # axs[0].scatter(time,probs, c='g',s=5)
+    # axs[0].scatter(time,labels,c='r',s=5) # Ground truth
+
+    # #axs[1].plot(time,Ftan,c ='r')
+    # axs[1].plot(time,data[5][:], c= 'b')
+
+
+
+
+    # plt.show()

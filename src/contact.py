@@ -153,7 +153,10 @@ if __name__ == "__main__":
     ax, ay, wz, fx, fy, fz, labels = prepare_data() 
     data = [ax,ay,wz,fx,fy,fz]
 
-
+    time = np.arange(fz.shape[0])
+    plt.plot(time,fz, c='r')
+    plt.plot(time,np.sqrt(fx**2+fy**2), c='b')
+    plt.show()
     means = mle_means(data)
 
     probs = contact_probability(means)
