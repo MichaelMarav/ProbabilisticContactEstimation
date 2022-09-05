@@ -30,7 +30,7 @@ friction_coef = 0.1
 def prepare_data():
 
     # Read Dataset
-    data_filename = "../data/talos_100hz.csv"
+    data_filename = "../data/realTALOS1.csv"
 
     data = np.genfromtxt(data_filename,delimiter=",")
 
@@ -40,17 +40,10 @@ def prepare_data():
     data[:,1] = sp.medfilt(data[:,1], median_window)
     data[:,2] = sp.medfilt(data[:,2], median_window)
     data[:,3] = sp.medfilt(data[:,3], median_window)
-    data[:,4] = sp.medfilt(data[:,4], median_window)
-    data[:,5] = sp.medfilt(data[:,5], median_window)
-    data[:,6] = sp.medfilt(data[:,6], median_window)
-    data[:,7] = sp.medfilt(data[:,7], median_window)
-    data[:,8] = sp.medfilt(data[:,8], median_window)
-    data[:,9] = sp.medfilt(data[:,9], median_window)
-    data[:,10]= sp.medfilt(data[:,10], median_window)
-    data[:,11]= sp.medfilt(data[:,11], median_window)
+   
 
 
-    return data[:,6], data[:,7], data[:,11], data[:,0], data[:,1], data[:,2]  
+    return data[:,0], data[:,1], data[:,2]  , data[:,3]
 
 
 
@@ -123,49 +116,18 @@ def contact_probability(means):
 if __name__ == "__main__":
 
 
-    ax, ay, wz, fx, fy, fz = prepare_data() 
-    data = [ax,ay,wz,fx,fy,fz]
+    stamp,fx, fy, fz = prepare_data() 
+    fx = fx[900:1400]
+    fy = fy[900:1400]
+    fz = fz[900:1400]
+    # stamp = stamp[500:800]
+    time = np.arange(fx.shape[0])
+    fric = np.arange(0.05,1.0,0.1)
+    for f in fric:
+        plt.title("mu = "+str(f))
+        plt.plot(time,f*fz,c = 'r')
+        plt.plot(time,np.sqrt(fx**2+fy**2),c='b')
+        plt.show()
     
-    
-    fric = np.arange(0.5,1.0,0.05)
-    
-    time = np.arange(1000)
-    fz = fz[4600:5600]
-    fx = fx[4600:5600]
-    fy = fy[4600:5600]
-    
-    plt.title("Talos")
-    fig, axs = plt.subplots(3)
-    axs[0].set_title("Fx")
-    axs[0].plot(time,fx, c='b')
 
-    axs[1].set_title("Fy")
-    axs[1].plot(time,fy, c='b') # Ground truth
-    
-    axs[2].set_title("Fz")
-    axs[2].plot(time,fz, c='b') # Ground truth
-
-
-    plt.show()
-    # #axs[1].plot(time,Ftan,c ='r')
-    # axs[1].plot(time,data[5][:], c= 'b')
-    
-    # means = mle_means(data)
-
-    # probs = contact_probability(means)
-
-    # Ftan = np.sqrt(data[3][:]**2+data[4][:]**2)
-
-    # time = np.arange(probs.shape[0])
-
-    # fig, axs = plt.subplots(2)
-    # axs[0].scatter(time,probs, c='g',s=5)
-    # axs[0].scatter(time,labels,c='r',s=5) # Ground truth
-
-    # #axs[1].plot(time,Ftan,c ='r')
-    # axs[1].plot(time,data[5][:], c= 'b')
-
-
-
-
-    # plt.show()
+   
