@@ -29,12 +29,16 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-add_executable(friction_estimation src/friction.cpp)
-add_dependencies(friction_estimation ${catkin_EXPORTED_TARGETS})
-target_link_libraries(friction_estimation ${catkin_LIBRARIES} ${EIGEN3_LIBRARIES} ${Boost_LIBRARIES})
+#add_executable(friction_estimation src/friction.cpp)
+#add_dependencies(friction_estimation ${catkin_EXPORTED_TARGETS})
+#target_link_libraries(friction_estimation ${catkin_LIBRARIES} ${EIGEN3_LIBRARIES} ${Boost_LIBRARIES})
 
 
-add_executable(contact_estimation src/contact_estimation.cpp)
-add_dependencies(contact_estimation ${catkin_EXPORTED_TARGETS})
-target_link_libraries(contact_estimation ${catkin_LIBRARIES} ${EIGEN3_LIBRARIES} ${Boost_LIBRARIES})
+#add_executable(contact_estimation src/contact_estimation.cpp)
+#add_dependencies(contact_estimation ${catkin_EXPORTED_TARGETS})
+#target_link_libraries(contact_estimation ${catkin_LIBRARIES} ${EIGEN3_LIBRARIES} ${Boost_LIBRARIES})
+catkin_install_python(PROGRAMS src/contact.py src/cdf_go1.py src/contactTalos.py
+DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
 
