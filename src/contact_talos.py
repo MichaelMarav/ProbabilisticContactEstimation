@@ -12,8 +12,8 @@ id_ax,id_ay,id_az,id_wx,id_wy,id_wz = 6,7,8,9,10,11
 
 
 # Standard deviation for 1000hz (Rotella et al.)
-sigma_a = 0.02467
-sigma_w = 0.01653
+sigma_a = 2
+sigma_w = 0.01
 sigma_F = 2
 
 contact_threshold_label = 50 # How much larger mu*Fz must be from Ftan, for the contact to be considered stable
@@ -30,20 +30,23 @@ friction_coef = 0.1
 def prepare_data():
 
     # Read Dataset
-    data_filename = "../data/realTALOS1.csv"
+    filename = "../data/realTALOS1.csv"
 
-    data = np.genfromtxt(data_filename,delimiter=",")
+    data = np.genfromtxt(filename,delimiter=",")
 
-    # Median filter to get rid of the random spikes (raisim problem)
-    median_window = 7
-    data[:,0] = sp.medfilt(data[:,0], median_window)
-    data[:,1] = sp.medfilt(data[:,1], median_window)
-    data[:,2] = sp.medfilt(data[:,2], median_window)
-    data[:,3] = sp.medfilt(data[:,3], median_window)
-   
+    Fx = data[:,0]
+    Fy = data[:,1]
+    Fz = data[:,2]
+    
+    ax = data[:,3]
+    ay = data[:,4]
+    az = data[:,5]
+    
+    wx = data[:,6]
+    wy = data[:,7]
+    wz = data[:,8]
 
-
-    return data[:,0], data[:,1], data[:,2]  , data[:,3]
+    return Fx,Fy,Fz,ax,ay,az,wx,wy,wz
 
 
 
@@ -53,7 +56,7 @@ Input: Takes a list with the features
 Output: np array means with all the mean of gaussians for batch size with stride
 '''
 def mle_means(data):
-    batch_size = 50
+    batch_size = 20
     stride = 1
     means = np.empty((data[0].shape[0],len(data)))
     sum_x = 0
@@ -101,7 +104,7 @@ prob: np.array (num_samples) -> Contains the probabilities of stable contact
 '''
 def contact_probability(means):
     prob = np.empty((means.shape[0],))
-    sigma_thresh = 2 # How close to 0 I want the value to be (symmetrical)
+    sigma_thresh = 3 # How close to 0 I want the value to be (symmetrical)
     for i in range(means.shape[0]):
         Pax = normal_cdf(means[i,0],sigma_a,sigma_thresh*sigma_a) - normal_cdf(means[i,0],sigma_a,-sigma_thresh*sigma_a)
         Pay = normal_cdf(means[i,1],sigma_a,sigma_thresh*sigma_a) - normal_cdf(means[i,1],sigma_a,-sigma_thresh*sigma_a)
@@ -116,18 +119,31 @@ def contact_probability(means):
 if __name__ == "__main__":
 
 
-    stamp,fx, fy, fz = prepare_data() 
-    fx = fx[900:1400]
-    fy = fy[900:1400]
-    fz = fz[900:1400]
-    # stamp = stamp[500:800]
-    time = np.arange(fx.shape[0])
-    fric = np.arange(0.05,1.0,0.1)
-    for f in fric:
-        plt.title("mu = "+str(f))
-        plt.plot(time,f*fz,c = 'r')
-        plt.plot(time,np.sqrt(fx**2+fy**2),c='b')
-        plt.show()
-    
+    fx,fy,fz,ax,ay,az,wx,wy,wz = prepare_data() 
+    data = [ax,ay,wz,fx,fy,fz]
 
-   
+
+    means = mle_means(data)
+
+    probs = contact_probability(means)
+
+    Ftan = np.sqrt(data[3][:]**2+data[4][:]**2)
+
+    time = np.arange(probs.shape[0])
+
+    # time_a = np.arange(ax.shape[0])
+    # time_F = np.arange(fx.shape[0])
+    # fig, axs = plt.subplots(4)
+    # axs[0] = axs[0].plot(time_a,ax)
+    # axs[1] = axs[1].plot(time_a,ay)
+    # axs[2] = axs[2].plot(time_a,wz)
+    # axs[3] = axs[3].plot(time_F,fz)
+    # plt.show()
+    fig, axs = plt.subplots(2)
+    axs[0].plot(time,probs, c='g')#,s=5)
+
+    time_f = np.arange(fz.shape[0])
+    axs[1].plot(time_f,fz, c= 'b')
+
+    plt.show()
+    
