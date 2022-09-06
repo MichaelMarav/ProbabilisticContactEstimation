@@ -123,6 +123,25 @@ def normal_cdf(mu,sigma,x):
     return 0.5*(1 + math.erf(a))
 
 
+'''
+*** Input *** 
+data: List with all data
+probs: Array with probabilities for each contact
+Plots data + probabilities 
+'''
+def plot_data(data,probs):
+    Ftan = np.sqrt(data[3][:]**2+data[4][:]**2)
+
+    time = np.arange(probs.shape[0])
+
+    fig, axs = plt.subplots(2)
+    axs[0].scatter(time,probs, c='g',s=5)
+    axs[0].scatter(time,labels,c='r',s=5) # Ground truth
+
+    axs[1].plot(time,Ftan,c ='r')
+    axs[1].plot(time,0.1*data[5][:], c= 'b')
+
+    plt.show()
 
 '''
 *** Input ***: 
@@ -145,6 +164,17 @@ def contact_probability(means):
         prob[i] = Pax*Pay*Pwz#*PFz
     return prob
 
+'''
+***INPUT***
+data: List with relevant data points
+probs: array with stable contact probabilities at each timestep
+
+*** OUTPUT ***
+mu = An estimate of static friction coefficient 
+'''
+def friction_estimation(data,probs):
+
+    pass
 
 
 if __name__ == "__main__":
@@ -153,28 +183,17 @@ if __name__ == "__main__":
     ax, ay, wz, fx, fy, fz, labels = prepare_data() 
     data = [ax,ay,wz,fx,fy,fz]
 
-    time = np.arange(ax.shape[0])
-    fig, axs = plt.subplots(4)
-    axs[0] = axs[0].plot(time,ax)
-    axs[1] = axs[1].plot(time,ay)
-    axs[2] = axs[2].plot(time,wz)
-    axs[3] = axs[3].plot(time,fz)
-    plt.show()
-    '''
+
     means = mle_means(data)
 
     probs = contact_probability(means)
 
-    Ftan = np.sqrt(data[3][:]**2+data[4][:]**2)
+    friction_estimation(data,probs)
 
-    time = np.arange(probs.shape[0])
 
-    fig, axs = plt.subplots(2)
-    axs[0].scatter(time,probs, c='g',s=5)
-    axs[0].scatter(time,labels,c='r',s=5) # Ground truth
+    
+    # PLOT DATA
+    plot_data(data,probs)
+    
+    mu = firction_estimation(data,probs)
 
-    axs[1].plot(time,Ftan,c ='r')
-    axs[1].plot(time,0.1*data[5][:], c= 'b')
-
-    plt.show()
-    '''
