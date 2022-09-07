@@ -6,8 +6,8 @@ from numpy import genfromtxt
 import matplotlib.pyplot as plt
 from scipy import signal as sp 
 
-filename = "../data/go1_1000hz.csv" 
-
+filename = "../data/vel_500hz.csv" 
+refresh_rate = 500 # Hz
 Fx,Fy,Fz,Tx,Ty,Tz = 0,1,2,3,4,5
 ax,ay,az,wx,wy,wz = 6,7,8,9,10,11
 
@@ -111,7 +111,7 @@ def convert_vel2acc(data):
     data_imu = np.empty((data.shape[0]-1,data.shape[1]-1))
     for i in range(1,data.shape[0]):
         for j in range(1,4):
-            data_imu[i-1,j] = (data[i,j]-data[i-1,j])*1000
+            data_imu[i-1,j] = (data[i,j]-data[i-1,j])*refresh_rate
     for i in range(1,data.shape[0]):
         data_imu[i-1,3] = data[i,3]
         data_imu[i-1,4] = data[i,4]

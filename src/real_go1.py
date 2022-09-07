@@ -6,10 +6,15 @@ import math
 from scipy import signal as sp 
 import matplotlib.pyplot as plt
 
-# Indices for features (file structure)
-id_Fx,id_Fy,id_Fz,id_Tx,id_Ty,id_Tz = 0,1,2,3,4,5
-id_ax,id_ay,id_az,id_wx,id_wy,id_wz = 6,7,8,9,10,11
 
+# FORCES AND BASE IMU ---> 500 hz
+# Foot imu ---> 260
+
+
+# Indices for features (file structure)
+id_F1,id_F2,id_F3,id_F4 = 0,1,2,3
+id_base_ax,id_base_ay,id_base_az,id_base_wx,id_base_wy,id_base_wz =  4,5,6,7,8,9
+id_foot_ax,id_foot_ay,id_foot_az,id_foot_wx,id_foot_wy,id_foot_wz =  10,11,12,13,14,15
 
 # Standard deviation for 1000hz (Rotella et al.)
 sigma_a = 0.02467
@@ -25,59 +30,55 @@ friction_coef = 0.1
 3) Adds noise (0 mean gaussian distribution)
 4) Uses median filter to remove raisim random spikes in measurements
 '''
-
-
 def prepare_data():
 
     # Read Dataset
-    data_filename = "../data/atlas_1000hz_01ground.csv"
+    data_filename = "../data/REALgo1.csv"
 
     data = np.genfromtxt(data_filename,delimiter=",")
-
-
-    Fx = data[:,0]
-    Fy = data[:,1]
-    Fz = data[:,2]
-
-    labels = np.empty((Fx.shape[0],))
-    for i in range(Fx.shape[0]):
-        if Fz[i] > 1 and np.sqrt(Fx[i]**2 + Fy[i]**2) -friction_coef*Fz[i] <= -contact_threshold_label:
-            labels[i] = 1
-        else: 
-            labels[i] = 0
-
-
-    # Add gaussian noise
-    for i in range (data.shape[0]):
-        for j in range (3):
-            data[i,j] += np.random.normal(0,sigma_F)
     
-    for i in range (data.shape[0]):
-        for j in range (6,9):
-            data[i,j] += np.random.normal(0,sigma_a)
-    
-    for i in range (data.shape[0]):
-        for j in range (9,12):
-            data[i,j] += np.random.normal(0,sigma_w)
-    
+
+    # BASE
+    f1 = data[:,id_F1] 
+    f2 = data[:,id_F2] 
+    f3 = data[:,id_F3] 
+    f4 = data[:,id_F4] 
+    base_ax = data[:,id_base_ax]
+    base_ay = data[:,id_base_ay]
+    base_az = data[:,id_base_az]
+    base_wx = data[:,id_base_wx]
+    base_wy = data[:,id_base_wy]
+    base_wz = data[:,id_base_wz]
+
+
+
+    foot_ax = data[:,id_foot_ax]
+    foot_ay = data[:,id_foot_ay]
+    foot_az = data[:,id_foot_az]
+
+    foot_wx = data[:,id_foot_wx]
+    foot_wy = data[:,id_foot_wy]
+    foot_wz = data[:,id_foot_wz]
 
     # Median filter to get rid of the random spikes (raisim problem)
-    median_window = 7
-    data[:,0] = sp.medfilt(data[:,0], median_window)
-    data[:,1] = sp.medfilt(data[:,1], median_window)
-    data[:,2] = sp.medfilt(data[:,2], median_window)
-    data[:,3] = sp.medfilt(data[:,3], median_window)
-    data[:,4] = sp.medfilt(data[:,4], median_window)
-    data[:,5] = sp.medfilt(data[:,5], median_window)
-    data[:,6] = sp.medfilt(data[:,6], median_window)
-    data[:,7] = sp.medfilt(data[:,7], median_window)
-    data[:,8] = sp.medfilt(data[:,8], median_window)
-    data[:,9] = sp.medfilt(data[:,9], median_window)
-    data[:,10]= sp.medfilt(data[:,10], median_window)
-    data[:,11]= sp.medfilt(data[:,11], median_window)
+    # median_window = 7
+    # data[:,0] = sp.medfilt(data[:,0], median_window)
+    # data[:,1] = sp.medfilt(data[:,1], median_window)
+    # data[:,2] = sp.medfilt(data[:,2], median_window)
+    # data[:,3] = sp.medfilt(data[:,3], median_window)
+    # data[:,4] = sp.medfilt(data[:,4], median_window)
+    # data[:,5] = sp.medfilt(data[:,5], median_window)
+    # data[:,6] = sp.medfilt(data[:,6], median_window)
+    # data[:,7] = sp.medfilt(data[:,7], median_window)
+    # data[:,8] = sp.medfilt(data[:,8], median_window)
+    # data[:,9] = sp.medfilt(data[:,9], median_window)
+    # data[:,10]= sp.medfilt(data[:,10], median_window)
+    # data[:,11]= sp.medfilt(data[:,11], median_window)
 
 
-    return data[:,6], data[:,7], data[:,11], data[:,0], data[:,1], data[:,2] , labels 
+    return f1,f2,f3,f4,base_ax,base_ay,base_az,base_wx,base_wy,base_wz,foot_ax,foot_ay,foot_az,foot_wx,foot_wy,foot_wz
+
+
 
 
 
@@ -123,25 +124,7 @@ def normal_cdf(mu,sigma,x):
     return 0.5*(1 + math.erf(a))
 
 
-'''
-*** Input *** 
-data: List with all data
-probs: Array with probabilities for each contact
-Plots data + probabilities 
-'''
-def plot_data(data,probs):
-    Ftan = np.sqrt(data[3][:]**2+data[4][:]**2)
 
-    time = np.arange(probs.shape[0])
-
-    fig, axs = plt.subplots(2)
-    axs[0].scatter(time,probs, c='g',s=5)
-    axs[0].scatter(time,labels,c='r',s=5) # Ground truth
-
-    axs[1].plot(time,Ftan,c ='r')
-    axs[1].plot(time,0.1*data[5][:], c= 'b')
-
-    plt.show()
 
 '''
 *** Input ***: 
@@ -165,21 +148,37 @@ def contact_probability(means):
     return prob
 
 
+
 if __name__ == "__main__":
 
 
-    ax, ay, wz, fx, fy, fz, labels = prepare_data() 
-    data = [ax,ay,wz,fx,fy,fz]
+    f1,f2,f3,f4,base_ax,base_ay,base_az,base_wx,base_wy,base_wz,foot_ax,foot_ay,foot_az,foot_wx,foot_wy,foot_wz= prepare_data() 
+    data = [f1,f2,f3,f4,base_ax,base_ay,base_az,base_wx,base_wy,base_wz,foot_ax,foot_ay,foot_az,foot_wx,foot_wy,foot_wz]
+
+    
+
+    time = np.arange(f1.shape[0])
+    fig, axs = plt.subplots(4)
+    
+    axs[0].plot(time,f1, c='g')
+    time_a = np.arange(foot_ax.shape[0])
+    axs[1].scatter(time_a,foot_ax, c='g',s=5)
+    axs[2].scatter(time_a,base_ay, c='g',s=5)
+    axs[3].scatter(time_a,base_az, c='g',s=5)
+    plt.show()
+    
+    # data = [ax,ay,wz,fx,fy,fz]
 
 
-    means = mle_means(data)
+    # means = mle_means(data)
 
-    probs = contact_probability(means)
+    # probs = contact_probability(means)
 
+    # friction_estimation(data,probs)
 
 
     
     # PLOT DATA
-    plot_data(data,probs)
+    # plot_data(data,probs)
     
 
