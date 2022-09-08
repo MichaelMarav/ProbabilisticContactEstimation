@@ -120,19 +120,22 @@ if __name__ == "__main__":
 
     ax, ay, wz, fx, fy, fz, labels = prepare_data() 
     # data = [ax,ay,wz,fx,fy,fz]
-    data = make_data()
+    start,end = 9700,9850
+    ax = ax[start:end]
 
-    x = make_data()
 
-    x_d = np.linspace(-10, 10, 1000) 
+    
+    kde = KernelDensity(bandwidth=sigma_a, kernel='gaussian')
+    ax = ax.reshape((len(ax),1))
+    kde.fit(ax)
 
-    kde = KernelDensity(bandwidth=1.0, kernel='gaussian')
-    kde.fit(x[:, None])
+    values = np.arange(-0.2,1,0.01)
+    values = values.reshape((len(values), 1))
+    
+    probabilities = kde.score_samples(values)
+    probabilities = np.exp(probabilities)
 
-    # score_samples returns the log of the probability density
-    logprob = kde.score_samples(x_d[:, None])
-
-    plt.fill_between(x_d, np.exp(logprob), alpha=0.5)
-    plt.plot(x, np.full_like(x, -0.01), '|k', markeredgewidth=1)
-    # plt.ylim(-0.02, 0.22)
+    plt.hist(ax,bins=30)
+    plt.plot(values[:],probabilities)
     plt.show()
+    
