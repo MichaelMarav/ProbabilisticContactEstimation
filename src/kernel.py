@@ -34,7 +34,7 @@ friction_coef = 0.1
 def prepare_data():
 
     # Read Dataset
-    data_filename = "../data/atlas_1000hz_01ground.csv"
+    data_filename = "../data/atlas_1000hz_01gr_003road.csv"
 
     data = np.genfromtxt(data_filename,delimiter=",")
 
@@ -81,61 +81,137 @@ def prepare_data():
     data[:,11]= sp.medfilt(data[:,11], median_window)
 
 
-    return data[:,6], data[:,7], data[:,11], data[:,0], data[:,1], data[:,2] , labels 
-
-
-def gauss_kernel(x):
-    return (1./np.sqrt(2*math.pi))*math.exp(-0.5*x**2)
+    return data[:,6], data[:,7],data[:,8],data[:,9],data[:,10], data[:,11], data[:,0], data[:,1], data[:,2] , labels 
 
 
 
+def get_axis_probability(start_value, end_value, eval_points, kd):
+    
+    # Number of evaluation points 
+    N = eval_points                                      
+    step = (end_value - start_value) / (N - 1)  # Step size
 
-def kde(x,h,xi):
-    batch_size = 25
-    sum_kernels = 0 
-    h = 2
-    for i in range(batch_size):
-        sum_kernels += gauss_kernel((x-xi[i])/h)
-    sum_kernels = sum_kernels*(1./(batch_size*h))
+    x = np.linspace(start_value, end_value, N)[:, np.newaxis]  # Generate values in the range
+    kd_vals = np.exp(kd.score_samples(x))  # Get PDF values for each x
+    probability = np.sum(kd_vals * step)  # Approximate the integral of the PDF
+    return probability.round(4)
+
+
+def stable_contact_detection(ax,ay,az,wx,wy,wz):
+    # Parameters
+    batch_size = 50
+    stride = 1
+    thres_a = 0.4
+    thres_w = 0.04
+    eval_samples = 50
+    N = ax.shape[0] # Number of samples
+
+    stable_prob_tangential= np.empty((N,))
+    stable_prob_vertical  = np.empty((N,))
 
 
 
-def make_data():
-    data = np.empty((100,))
-    m1 = 1
-    m2 = 7
-    s1 = 2
-    s2 = 2
+    # First batch
+    ax_batch = ax[0:batch_size]
+    ay_batch = ay[0:batch_size]
+    az_batch = az[0:batch_size]
 
-    for i in range(50):
-        data[i] = np.random.normal(m1,s1)
-    for i in range(50,100):
-        data[i] = np.random.normal(m2,s2)
+    wx_batch = wx[0:batch_size]
+    wy_batch = wy[0:batch_size]
+    wz_batch = wz[0:batch_size]
 
-    return data
+    kd_ax = KernelDensity(bandwidth=sigma_a, kernel='gaussian').fit(ax_batch.reshape((len(ax_batch),1)))
+    kd_ay = KernelDensity(bandwidth=sigma_a, kernel='gaussian').fit(ay_batch.reshape((len(ay_batch),1)))
+    kd_az = KernelDensity(bandwidth=sigma_a, kernel='gaussian').fit(az_batch.reshape((len(az_batch),1))) 
+    kd_wx = KernelDensity(bandwidth=sigma_w, kernel='gaussian').fit(wx_batch.reshape((len(wx_batch),1))) 
+    kd_wy = KernelDensity(bandwidth=sigma_w, kernel='gaussian').fit(wy_batch.reshape((len(wy_batch),1))) 
+    kd_wz = KernelDensity(bandwidth=sigma_w, kernel='gaussian').fit(wz_batch.reshape((len(wz_batch),1))) 
+
+    prob_ax = get_axis_probability(-thres_a,thres_a,eval_samples,kd_ax)
+    prob_ay = get_axis_probability(-thres_a,thres_a,eval_samples,kd_ay)
+    prob_az = get_axis_probability(-thres_a,thres_a,eval_samples,kd_az)
+    prob_wx = get_axis_probability(-thres_w,thres_w,eval_samples,kd_wx)
+    prob_wy = get_axis_probability(-thres_w,thres_w,eval_samples,kd_wy)
+    prob_wz = get_axis_probability(-thres_w,thres_w,eval_samples,kd_wz)
+    stable_prob_tangential[0:batch_size] =  prob_ax*prob_ay#*prob_wz
+    stable_prob_vertical[0:batch_size] =  prob_az*prob_wx*prob_wy
+
+
+
+    for i in range(batch_size,ax.shape[0],stride):
+        ax_batch = ax[i:(i+batch_size)]
+        ay_batch = ay[i:(i+batch_size)]
+        wz_batch = wz[i:(i+batch_size)]
+
+        az_batch = az[i:(i+batch_size)]
+        wx_batch = wx[i:(i+batch_size)]
+        wy_batch = wy[i:(i+batch_size)]
+
+        # TANGENTIAL
+        kd_ax = KernelDensity(bandwidth=sigma_a, kernel='gaussian').fit(ax_batch.reshape((len(ax_batch),1)))
+        kd_ay = KernelDensity(bandwidth=sigma_a, kernel='gaussian').fit(ay_batch.reshape((len(ay_batch),1)))
+        kd_wz = KernelDensity(bandwidth=sigma_w, kernel='gaussian').fit(wz_batch.reshape((len(wz_batch),1))) 
+        prob_ax = get_axis_probability(-thres_a,thres_a,eval_samples,kd_ax)
+        prob_ay = get_axis_probability(-thres_a,thres_a,eval_samples,kd_ay)
+        prob_wz = get_axis_probability(-thres_w,thres_w,eval_samples,kd_wz)
+        stable_prob_tangential[i] =  prob_ax*prob_ay*prob_wz
+
+
+        # VERTICAL
+        kd_wx = KernelDensity(bandwidth=sigma_w, kernel='gaussian').fit(wx_batch.reshape((len(wx_batch),1))) 
+        kd_wy = KernelDensity(bandwidth=sigma_w, kernel='gaussian').fit(wy_batch.reshape((len(wy_batch),1))) 
+        kd_az = KernelDensity(bandwidth=sigma_a, kernel='gaussian').fit(az_batch.reshape((len(az_batch),1))) 
+        prob_wx = get_axis_probability(-thres_w,thres_w,eval_samples,kd_wx)
+        prob_wy = get_axis_probability(-thres_w,thres_w,eval_samples,kd_wy)
+        prob_az = get_axis_probability(-thres_a,thres_a,eval_samples,kd_az)
+
+        stable_prob_vertical[i] =  prob_az*prob_wx*prob_wy
+
+    return stable_prob_tangential,stable_prob_vertical
 
 
 if __name__ == "__main__":
 
 
-    ax, ay, wz, fx, fy, fz, labels = prepare_data() 
-    # data = [ax,ay,wz,fx,fy,fz]
-    start,end = 9700,9850
-    ax = ax[start:end]
-
-
+    ax, ay,az,wx,wy, wz, fx, fy, fz, labels = prepare_data() 
     
-    kde = KernelDensity(bandwidth=sigma_a, kernel='gaussian')
-    ax = ax.reshape((len(ax),1))
-    kde.fit(ax)
 
-    values = np.arange(-0.2,1,0.01)
-    values = values.reshape((len(values), 1))
+    probs_xy,probs_z = stable_contact_detection(ax,ay,az,wx,wy,wz)
+
+
+    time = np.arange(wz.shape[0])
+    fig, axs = plt.subplots(6)
+    axs[0].scatter(time,probs_xy,c='g',s=5)  
+    axs[0].set_title("Tangential prob")  
+
+    axs[1].scatter(time,probs_z,c='g',s=5)    
+    axs[1].set_title("Vertical prob")  
+
+    axs[2].set_title("TOTAL prob")  
+    axs[2].scatter(time,probs_xy*probs_z,c='g',s=5)
     
-    probabilities = kde.score_samples(values)
-    probabilities = np.exp(probabilities)
+    axs[3].set_title("Vertical GRF")  
+    axs[3].plot(time,fz)
 
-    plt.hist(ax,bins=30)
-    plt.plot(values[:],probabilities)
-    plt.show()
+    axs[4].set_title("Linear acceleration x")  
+    axs[4].plot(time,ax)
+
+    axs[5].set_title("Linear acceleration y")  
+    axs[5].plot(time,ay)
+    plt.show() 
+
+
+
+    # ax = ax.reshape((len(ax),1))
+    # kde.fit(ax)
+
+    # values = np.arange(-0.2,1,0.01)
+    # values = values.reshape((len(values), 1))
+    
+    # probabilities = kde.score_samples(values)
+    # probabilities = np.exp(probabilities)
+
+    # plt.hist(ax,bins=30)
+    # plt.plot(values[:],probabilities)
+    # plt.show()
     
