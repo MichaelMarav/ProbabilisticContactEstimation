@@ -13,9 +13,8 @@ from sklearn.neighbors import KernelDensity
 
 
 # Indices for features (file structure)
-id_F1,id_F2,id_F3,id_F4 = 0,1,2,3
-id_base_ax,id_base_ay,id_base_az,id_base_wx,id_base_wy,id_base_wz =  4,5,6,7,8,9
-id_foot_ax,id_foot_ay,id_foot_az,id_foot_wx,id_foot_wy,id_foot_wz =  10,11,12,13,14,15
+id_F = 0
+id_foot_ax,id_foot_ay,id_foot_az,id_foot_wx,id_foot_wy,id_foot_wz =  1,2,3,4,5,6
 
 # Standard deviation for 1000hz (Rotella et al.)
 sigma_a = 0.02467
@@ -38,25 +37,8 @@ def prepare_data():
 
     data = np.genfromtxt(data_filename,delimiter=",")
     
-    
-    indx_to_remove = []
-    for j in range(data.shape[1]):
-        for i in range (data.shape[0]):
-            if np.isnan(data[i,j]):
-                indx_to_remove.append(i)
-    data = np.delete(data,indx_to_remove,axis = 0)
 
-    # BASE
-    f1 = data[:,id_F1] 
-    f2 = data[:,id_F2] 
-    f3 = data[:,id_F3] 
-    f4 = data[:,id_F4] 
-    base_ax = data[:,id_base_ax]
-    base_ay = data[:,id_base_ay]
-    base_az = data[:,id_base_az]
-    base_wx = data[:,id_base_wx]
-    base_wy = data[:,id_base_wy]
-    base_wz = data[:,id_base_wz]
+    f = data[:,0] 
 
 
 
@@ -68,7 +50,18 @@ def prepare_data():
     foot_wy = data[:,id_foot_wy]
     foot_wz = data[:,id_foot_wz]
 
+    for i in range(foot_ax.shape[0]):
+        if (np.isnan(foot_ax[i])):
+            break_point = i
+            break
+    foot_ax = foot_ax[0:break_point]
+    foot_ay = foot_ay[0:break_point]
+    foot_az = foot_az[0:break_point]
+    foot_wx = foot_wx[0:break_point]
+    foot_wy = foot_wy[0:break_point]
+    foot_wz = foot_wz[0:break_point]
 
+    
     # Median filter to get rid of the random spikes (raisim problem)
     # median_window = 7
     # data[:,0] = sp.medfilt(data[:,0], median_window)
@@ -85,7 +78,7 @@ def prepare_data():
     # data[:,11]= sp.medfilt(data[:,11], median_window)
 
 
-    return f1,f2,f3,f4,base_ax,base_ay,base_az,base_wx,base_wy,base_wz,foot_ax,foot_ay,foot_az,foot_wx,foot_wy,foot_wz
+    return f, foot_ax,foot_ay,foot_az,foot_wx,foot_wy,foot_wz
 
 
 
@@ -173,8 +166,7 @@ def stable_contact_detection(ax,ay,az,wx,wy,wz):
     # Parameters
     batch_size = 50
     stride = 1
-
-
+    
     thres_ax = 0.9
     thres_ay = 0.5  
     thres_az = 0.3
@@ -183,6 +175,8 @@ def stable_contact_detection(ax,ay,az,wx,wy,wz):
     thres_wy = 0.04
     thres_wz = 40
 
+
+    
     eval_samples = 50
     N = ax.shape[0] # Number of samples
 
@@ -226,13 +220,12 @@ def stable_contact_detection(ax,ay,az,wx,wy,wz):
 
 
     for i in range(batch_size,ax.shape[0],stride):
-        ax_batch = ax[i:(i+batch_size)]
-        ay_batch = ay[i:(i+batch_size)]
-        wz_batch = wz[i:(i+batch_size)]
-
-        az_batch = az[i:(i+batch_size)]
-        wx_batch = wx[i:(i+batch_size)]
-        wy_batch = wy[i:(i+batch_size)]
+        ax_batch = ax[(i-batch_size):i]
+        ay_batch = ay[(i-batch_size):i]
+        wz_batch = wz[(i-batch_size):i]
+        az_batch = az[(i-batch_size):i]
+        wx_batch = wx[(i-batch_size):i]
+        wy_batch = wy[(i-batch_size):i]
 
         # TANGENTIAL
         kd_ax = KernelDensity(bandwidth=sigma_a, kernel='gaussian').fit(ax_batch.reshape((len(ax_batch),1)))
@@ -267,8 +260,11 @@ def stable_contact_detection(ax,ay,az,wx,wy,wz):
 if __name__ == "__main__":
 
 
-    f1,f2,f3,f4,base_ax,base_ay,base_az,base_wx,base_wy,base_wz,foot_ax,foot_ay,foot_az,foot_wx,foot_wy,foot_wz= prepare_data() 
-
+    f,foot_ax,foot_ay,foot_az,foot_wx,foot_wy,foot_wz= prepare_data() 
+ 
+ 
+    bias_ay  = 1
+    foot_ay += bias_ay
     # f3_down = np.empty((f3.shape[0]//2,))
     # p = 0
     # # Downsample force
@@ -278,30 +274,25 @@ if __name__ == "__main__":
 
 
     
-    # Biases
-    # bias_ay = 1
-    # bias_wz = 35
+    # Biases    bias_ay  = 1
 
 
     # foot_ay += bias_ay
     # foot_wz += 35
     probs_x,probs_y,probs_z = stable_contact_detection(foot_ax,foot_ay,foot_az,foot_wx,foot_wy,foot_wz)
-    print(f3.shape,foot_ax.shape, probs_x.shape)
 
-
-    time_f = np.arange(f3.shape[0])
-
-    time_a = np.arange(probs_x.shape[0])
+    time_a = np.arange(foot_ax.shape[0])
+    time_f = np.arange(f.shape[0])
 
     fig, axs = plt.subplots(4)
-    axs[0].plot(time_f,f3)
+    axs[0].plot(time_f,f)
     axs[1].scatter(time_a,probs_x,c='g',s=5)  
     axs[2].scatter(time_a,probs_y,c='g',s=5)  
     axs[3].scatter(time_a,probs_x*probs_y,c='g',s=5)  
 
     plt.show()
     # fig, axs = plt.subplots(7)
-    # axs[0].plot(time,f3, c='g')
+    # axs[0].plot(time_f,f, c='g')
     # axs[1].plot(time_a,foot_ax, c='g')
     # axs[2].plot(time_a,foot_ay, c='g')
     # axs[3].plot(time_a,foot_az, c='g')
