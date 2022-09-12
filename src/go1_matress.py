@@ -18,7 +18,7 @@ id_foot_ax,id_foot_ay,id_foot_az,id_foot_wx,id_foot_wy,id_foot_wz =  1,2,3,4,5,6
 
 # Standard deviation for 1000hz (Rotella et al.)
 sigma_a = 0.02467
-sigma_w = 100
+sigma_w = 1
 sigma_F = 2
 
 contact_threshold_label = 50 # How much larger mu*Fz must be from Ftan, for the contact to be considered stable
@@ -179,7 +179,7 @@ def stable_contact_detection(ax,ay,az,wx,wy,wz):
 
 
     
-    eval_samples = 50
+    eval_samples = 500
     N = ax.shape[0] # Number of samples
 
     probs_x = np.empty((N,))
@@ -199,17 +199,25 @@ def stable_contact_detection(ax,ay,az,wx,wy,wz):
 
     kd_ax = KernelDensity(bandwidth=sigma_a, kernel='gaussian').fit(ax_batch.reshape((len(ax_batch),1)))
     kd_ay = KernelDensity(bandwidth=sigma_a, kernel='gaussian').fit(ay_batch.reshape((len(ay_batch),1)))
-    kd_az = KernelDensity(bandwidth=sigma_a, kernel='gaussian').fit(az_batch.reshape((len(az_batch),1))) 
-    kd_wx = KernelDensity(bandwidth=sigma_w, kernel='gaussian').fit(wx_batch.reshape((len(wx_batch),1))) 
-    kd_wy = KernelDensity(bandwidth=sigma_w, kernel='gaussian').fit(wy_batch.reshape((len(wy_batch),1))) 
-    kd_wz = KernelDensity(bandwidth=sigma_w, kernel='gaussian').fit(wz_batch.reshape((len(wz_batch),1))) 
+    kd_wz = KernelDensity(bandwidth=sigma_w, kernel='gaussian').fit(wz_batch.reshape((len(wz_batch),1)))
 
+    # Tangential
     prob_ax = get_axis_probability(-thres_ax,thres_ax,eval_samples,kd_ax)
     prob_ay = get_axis_probability(-thres_ay,thres_ay,eval_samples,kd_ay)
-    prob_az = get_axis_probability(-thres_az,thres_az,eval_samples,kd_az)
-    prob_wx = get_axis_probability(-thres_wx,thres_wx,eval_samples,kd_wx)
-    prob_wy = get_axis_probability(-thres_wy,thres_wy,eval_samples,kd_wy)
     prob_wz = get_axis_probability(-thres_wz,thres_wz,eval_samples,kd_wz)
+
+   
+
+
+    # Vertical
+
+    # kd_az = KernelDensity(bandwidth=sigma_a, kernel='gaussian').fit(az_batch.reshape((len(az_batch),1))) 
+    # kd_wx = KernelDensity(bandwidth=sigma_w, kernel='gaussian').fit(wx_batch.reshape((len(wx_batch),1))) 
+    # kd_wy = KernelDensity(bandwidth=sigma_w, kernel='gaussian').fit(wy_batch.reshape((len(wy_batch),1)))  
+
+    # prob_az = get_axis_probability(-thres_az,thres_az,eval_samples,kd_az)
+    # prob_wx = get_axis_probability(-thres_wx,thres_wx,eval_samples,kd_wx)
+    # prob_wy = get_axis_probability(-thres_wy,thres_wy,eval_samples,kd_wy)
 
 
 
@@ -225,6 +233,8 @@ def stable_contact_detection(ax,ay,az,wx,wy,wz):
         ax_batch = ax[(i-batch_size):i]
         ay_batch = ay[(i-batch_size):i]
         wz_batch = wz[(i-batch_size):i]
+
+
         az_batch = az[(i-batch_size):i]
         wx_batch = wx[(i-batch_size):i]
         wy_batch = wy[(i-batch_size):i]
@@ -237,7 +247,6 @@ def stable_contact_detection(ax,ay,az,wx,wy,wz):
         prob_ax = get_axis_probability(-thres_ax,thres_ax,eval_samples,kd_ax)
         prob_ay = get_axis_probability(-thres_ay,thres_ay,eval_samples,kd_ay)
         prob_wz = get_axis_probability(-thres_wz,thres_wz,eval_samples,kd_wz)
-
 
         probs_x[i] =  prob_ax
         probs_y[i] =  prob_ay
@@ -260,25 +269,52 @@ def stable_contact_detection(ax,ay,az,wx,wy,wz):
     return probs_x,probs_y,probs_z
 
 
+# def debug_prob(wz):
+#     batch_size = 50
+#     probs = []
+#     for i in range(batch_size,wz.shape[0],1):
+#         wz_batch = wz[(i-batch_size):i]
+
+#         kd_wz = KernelDensity(bandwidth=1, kernel='gaussian').fit(wz_batch.reshape((len(wz_batch),1)))
+
+#         prob_wz = get_axis_probability(-100,100,500,kd_wz)
+#         probs.append(prob_wz)
+
+
+#     time = np.arange(len(probs))
+
+#     plt.plot(time,probs)
+#     plt.show()
+
+
+
+
 if __name__ == "__main__":
 
 
     f,foot_ax,foot_ay,foot_az,foot_wx,foot_wy,foot_wz= prepare_data() 
-    print(foot_ax.shape)
+
+    print(foot_wz.shape)
+
     time_f = np.arange(0,f.shape[0]*0.002,0.002)
     time_a = np.arange(0,foot_az.shape[0]*0.004,0.004)
 
-    fig, axs  = plt.subplots(4)
-    axs[0].plot(time_f,f)
-    axs[3].plot(time_a,foot_ay)
-    axs[1].plot(time_a,foot_az)
-    axs[2].plot(time_a,foot_ax)
-
-    plt.show()
 
 
-    bias_ay  = 1
+    bias_az = -0.32
+    bias_ay = 1
+    bias_ax = 0.2
     foot_ay += bias_ay
+    foot_az += bias_az
+    foot_ax += bias_ax
+
+    # fig, axs  = plt.subplots(2)
+    # axs[0].plot(time_f,f)
+
+    # axs[1].plot(time_a,foot_wz)
+    # plt.show()
+
+
     # # f3_down = np.empty((f3.shape[0]//2,))
     # # p = 0
     # # # Downsample force
@@ -289,24 +325,21 @@ if __name__ == "__main__":
     # time_f = np.arange(f.shape[0])
     # time_a = np.arange(foot_ax.shape[0])
 
-    
 
 
-    # # foot_ay += bias_ay
-    # # foot_wz += 35
-    # probs_x,probs_y,probs_z = stable_contact_detection(foot_ax,foot_ay,foot_az,foot_wx,foot_wy,foot_wz)
+    probs_x,probs_y,probs_z = stable_contact_detection(foot_ax,foot_ay,foot_az,foot_wx,foot_wy,foot_wz)
+    time = np.arange(probs_x.shape[0])
 
+    fig, axs = plt.subplots(5)
+    axs[0].plot(time_f,f)
+    axs[1].scatter(time,probs_x,c='g',s=5)  
+    axs[2].scatter(time,probs_y,c='g',s=5)  
+    axs[3].scatter(time,probs_z,c='g',s=5)  
+    axs[4].scatter(time,probs_x*probs_y*probs_z,c='g',s=5)  
 
-    # fig, axs = plt.subplots(5)
-    # axs[0].plot(time_f,f)
-    # axs[1].scatter(time_a,probs_x,c='g',s=5)  
-    # axs[2].scatter(time_a,probs_y,c='g',s=5)  
-    # axs[3].scatter(time_a,probs_z,c='g',s=5)  
+    # # axs[4].scatter(time_a,probs_x*probs_y*probs_z,c='g',s=5)  
 
-    # axs[4].scatter(time_a,probs_x*probs_y*probs_z,c='g',s=5)  
-
-    # plt.show()
-
+    plt.show()
 
 
 
@@ -320,11 +353,6 @@ if __name__ == "__main__":
 
 
 
-    # fig, axs = plt.subplots(7)
-    # axs[0].plot(time_f,f, c='g')
-    # axs[1].plot(time_a,foot_ax, c='g')
-    # axs[2].plot(time_a,foot_ay, c='g')
-    # axs[3].plot(time_a,foot_az, c='g')
     # axs[4].plot(time_a,foot_wx, c='g')
     # axs[5].plot(time_a,foot_wy, c='g')
     # axs[6].plot(time_a,foot_wz, c='g')
