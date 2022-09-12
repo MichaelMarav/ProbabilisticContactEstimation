@@ -164,7 +164,7 @@ def get_axis_probability(start_value, end_value, eval_points, kd):
     return probability.round(4)
 
 
-def stable_contact_detection(ax,ay,az,wx,wy,wz):
+def stable_contact_detection(f,ax,ay,az,wx,wy,wz):
     # Parameters
     batch_size = 50
     stride = 1
@@ -173,8 +173,8 @@ def stable_contact_detection(ax,ay,az,wx,wy,wz):
     thres_ay = 0.5  
     thres_az = 0.3
 
-    thres_wx = 0.04
-    thres_wy = 0.04
+    thres_wx = 56
+    thres_wy = 50
     thres_wz = 100
 
 
@@ -182,9 +182,13 @@ def stable_contact_detection(ax,ay,az,wx,wy,wz):
     eval_samples = 500
     N = ax.shape[0] # Number of samples
 
-    probs_x = np.empty((N,))
-    probs_y = np.empty((N,))
-    probs_z = np.empty((N,))
+    probs_ax = np.empty((N,))
+    probs_ay = np.empty((N,))
+    probs_az = np.empty((N,))
+    
+    probs_wx = np.empty((N,))
+    probs_wy = np.empty((N,))
+    probs_wz = np.empty((N,))
 
 
 
@@ -199,31 +203,36 @@ def stable_contact_detection(ax,ay,az,wx,wy,wz):
 
     kd_ax = KernelDensity(bandwidth=sigma_a, kernel='gaussian').fit(ax_batch.reshape((len(ax_batch),1)))
     kd_ay = KernelDensity(bandwidth=sigma_a, kernel='gaussian').fit(ay_batch.reshape((len(ay_batch),1)))
-    kd_wz = KernelDensity(bandwidth=sigma_w, kernel='gaussian').fit(wz_batch.reshape((len(wz_batch),1)))
-
-    # Tangential
-    prob_ax = get_axis_probability(-thres_ax,thres_ax,eval_samples,kd_ax)
-    prob_ay = get_axis_probability(-thres_ay,thres_ay,eval_samples,kd_ay)
-    prob_wz = get_axis_probability(-thres_wz,thres_wz,eval_samples,kd_wz)
-
-   
-
+    kd_az = KernelDensity(bandwidth=sigma_a, kernel='gaussian').fit(az_batch.reshape((len(az_batch),1))) 
 
     # Vertical
 
-    # kd_az = KernelDensity(bandwidth=sigma_a, kernel='gaussian').fit(az_batch.reshape((len(az_batch),1))) 
-    # kd_wx = KernelDensity(bandwidth=sigma_w, kernel='gaussian').fit(wx_batch.reshape((len(wx_batch),1))) 
-    # kd_wy = KernelDensity(bandwidth=sigma_w, kernel='gaussian').fit(wy_batch.reshape((len(wy_batch),1)))  
-
-    # prob_az = get_axis_probability(-thres_az,thres_az,eval_samples,kd_az)
-    # prob_wx = get_axis_probability(-thres_wx,thres_wx,eval_samples,kd_wx)
-    # prob_wy = get_axis_probability(-thres_wy,thres_wy,eval_samples,kd_wy)
+    kd_wx = KernelDensity(bandwidth=sigma_w, kernel='gaussian').fit(wx_batch.reshape((len(wx_batch),1))) 
+    kd_wy = KernelDensity(bandwidth=sigma_w, kernel='gaussian').fit(wy_batch.reshape((len(wy_batch),1)))  
+    kd_wz = KernelDensity(bandwidth=sigma_w, kernel='gaussian').fit(wz_batch.reshape((len(wz_batch),1)))
 
 
+    # Tangential
+    prob_ax_i = get_axis_probability(-thres_ax,thres_ax,eval_samples,kd_ax)
+    prob_ay_i = get_axis_probability(-thres_ay,thres_ay,eval_samples,kd_ay)
+    prob_az_i = get_axis_probability(-thres_az,thres_az,eval_samples,kd_az)
 
-    probs_x[0:batch_size] =  prob_ax
-    probs_y[0:batch_size] =  prob_ay
-    probs_z[0:batch_size] =  prob_wz
+
+
+    prob_wx_i = get_axis_probability(-thres_wx,thres_wx,eval_samples,kd_wx)
+    prob_wy_i = get_axis_probability(-thres_wy,thres_wy,eval_samples,kd_wy)
+    prob_wz_i = get_axis_probability(-thres_wz,thres_wz,eval_samples,kd_wz)
+
+
+
+    probs_ax[0:batch_size] =  prob_ax_i
+    probs_ay[0:batch_size] =  prob_ay_i
+    probs_az[0:batch_size] =  prob_az_i
+
+
+    probs_wx[0:batch_size] =  prob_wx_i
+    probs_wy[0:batch_size] =  prob_wy_i
+    probs_wz[0:batch_size] =  prob_wz_i
 
     # stable_prob_vertical[0:batch_size] =  prob_az*prob_wx*prob_wy
 
@@ -232,61 +241,63 @@ def stable_contact_detection(ax,ay,az,wx,wy,wz):
     for i in range(batch_size,ax.shape[0],stride):
         ax_batch = ax[(i-batch_size):i]
         ay_batch = ay[(i-batch_size):i]
-        wz_batch = wz[(i-batch_size):i]
-
-
         az_batch = az[(i-batch_size):i]
+
         wx_batch = wx[(i-batch_size):i]
         wy_batch = wy[(i-batch_size):i]
+        wz_batch = wz[(i-batch_size):i]
 
         # TANGENTIAL
         kd_ax = KernelDensity(bandwidth=sigma_a, kernel='gaussian').fit(ax_batch.reshape((len(ax_batch),1)))
         kd_ay = KernelDensity(bandwidth=sigma_a, kernel='gaussian').fit(ay_batch.reshape((len(ay_batch),1)))
-        kd_wz = KernelDensity(bandwidth=sigma_w, kernel='gaussian').fit(wz_batch.reshape((len(wz_batch),1))) 
+        kd_az = KernelDensity(bandwidth=sigma_a, kernel='gaussian').fit(az_batch.reshape((len(az_batch),1))) 
         
-        prob_ax = get_axis_probability(-thres_ax,thres_ax,eval_samples,kd_ax)
-        prob_ay = get_axis_probability(-thres_ay,thres_ay,eval_samples,kd_ay)
-        prob_wz = get_axis_probability(-thres_wz,thres_wz,eval_samples,kd_wz)
 
-        probs_x[i] =  prob_ax
-        probs_y[i] =  prob_ay
-        probs_z[i] =  prob_wz
+        kd_wx = KernelDensity(bandwidth=sigma_w, kernel='gaussian').fit(wx_batch.reshape((len(wx_batch),1))) 
+        kd_wy = KernelDensity(bandwidth=sigma_w, kernel='gaussian').fit(wy_batch.reshape((len(wy_batch),1))) 
+        kd_wz = KernelDensity(bandwidth=sigma_w, kernel='gaussian').fit(wz_batch.reshape((len(wz_batch),1))) 
 
-
-        #stable_prob_tangential[i] =  prob_ax*prob_ay*prob_wz
-
-
-        # VERTICAL
-        # kd_wx = KernelDensity(bandwidth=sigma_w, kernel='gaussian').fit(wx_batch.reshape((len(wx_batch),1))) 
-        # kd_wy = KernelDensity(bandwidth=sigma_w, kernel='gaussian').fit(wy_batch.reshape((len(wy_batch),1))) 
-        # kd_az = KernelDensity(bandwidth=sigma_a, kernel='gaussian').fit(az_batch.reshape((len(az_batch),1))) 
-
-        # prob_wx = get_axis_probability(-thres_wx,thres_wx,eval_samples,kd_wx)
-        # prob_wy = get_axis_probability(-thres_wy,thres_wy,eval_samples,kd_wy)
-        # prob_az = get_axis_probability(-thres_az,thres_az,eval_samples,kd_az)
-
-        # stable_prob_vertical[i] =  prob_az*prob_wx*prob_wy
-    return probs_x,probs_y,probs_z
+        
+        prob_ax_i = get_axis_probability(-thres_ax,thres_ax,eval_samples,kd_ax)
+        prob_ay_i = get_axis_probability(-thres_ay,thres_ay,eval_samples,kd_ay)
+        prob_az_i = get_axis_probability(-thres_az,thres_az,eval_samples,kd_az)
 
 
-# def debug_prob(wz):
-#     batch_size = 50
-#     probs = []
-#     for i in range(batch_size,wz.shape[0],1):
-#         wz_batch = wz[(i-batch_size):i]
 
-#         kd_wz = KernelDensity(bandwidth=1, kernel='gaussian').fit(wz_batch.reshape((len(wz_batch),1)))
+        prob_wx_i = get_axis_probability(-thres_wx,thres_wx,eval_samples,kd_wx)
+        prob_wy_i = get_axis_probability(-thres_wy,thres_wy,eval_samples,kd_wy)
+        prob_wz_i = get_axis_probability(-thres_wz,thres_wz,eval_samples,kd_wz)
 
-#         prob_wz = get_axis_probability(-100,100,500,kd_wz)
-#         probs.append(prob_wz)
+        probs_ax[i] =  prob_ax_i
+        probs_ay[i] =  prob_ay_i
+        probs_az[i] =  prob_az_i
 
-
-#     time = np.arange(len(probs))
-
-#     plt.plot(time,probs)
-#     plt.show()
+        probs_wx[i] =  prob_wx_i
+        probs_wy[i] =  prob_wy_i
+        probs_wz[i] =  prob_wz_i
 
 
+    plot_probs(f,probs_ax,probs_ay,probs_az,probs_wx,probs_wy,probs_wz)
+
+
+    return
+
+def plot_probs(f,probs_ax,probs_ay,probs_az,probs_wx,probs_wy,probs_wz):
+    time = np.arange(probs_ax.shape[0])
+    time_f = np.arange(0,f.shape[0]*0.002,0.002)
+
+    fig, axs = plt.subplots(8)  
+    axs[0].plot(time_f,f)
+    axs[1].scatter(time,probs_ax,c='g',s=5)  
+    axs[2].scatter(time,probs_ay,c='g',s=5)  
+    axs[3].scatter(time,probs_az,c='g',s=5)  
+    axs[4].scatter(time,probs_wx,c='g',s=5)  
+    axs[5].scatter(time,probs_wy,c='g',s=5)  
+    axs[6].scatter(time,probs_wz,c='g',s=5)  
+    axs[7].scatter(time,probs_ax*probs_ay*probs_az*probs_wx*probs_wy*probs_wz,c='g',s=5)  
+    plt.show()
+    return
+    
 
 
 if __name__ == "__main__":
@@ -294,7 +305,6 @@ if __name__ == "__main__":
 
     f,foot_ax,foot_ay,foot_az,foot_wx,foot_wy,foot_wz= prepare_data() 
 
-    print(foot_wz.shape)
 
     time_f = np.arange(0,f.shape[0]*0.002,0.002)
     time_a = np.arange(0,foot_az.shape[0]*0.004,0.004)
@@ -308,63 +318,19 @@ if __name__ == "__main__":
     foot_az += bias_az
     foot_ax += bias_ax
 
-    # fig, axs  = plt.subplots(2)
-    # axs[0].plot(time_f,f)
 
-    # axs[1].plot(time_a,foot_wz)
-    # plt.show()
-
-
-    # # f3_down = np.empty((f3.shape[0]//2,))
-    # # p = 0
-    # # # Downsample force
-    # # for i in range(0,f3.shape[0]-1,2):
-    # #     f3_down[p] = f3[i]
-    # #     p += 1
-
-    # time_f = np.arange(f.shape[0])
-    # time_a = np.arange(foot_ax.shape[0])
-
-
-
-    probs_x,probs_y,probs_z = stable_contact_detection(foot_ax,foot_ay,foot_az,foot_wx,foot_wy,foot_wz)
-    time = np.arange(probs_x.shape[0])
-
-    fig, axs = plt.subplots(5)
+    fig, axs = plt.subplots(7)
     axs[0].plot(time_f,f)
-    axs[1].scatter(time,probs_x,c='g',s=5)  
-    axs[2].scatter(time,probs_y,c='g',s=5)  
-    axs[3].scatter(time,probs_z,c='g',s=5)  
-    axs[4].scatter(time,probs_x*probs_y*probs_z,c='g',s=5)  
-
-    # # axs[4].scatter(time_a,probs_x*probs_y*probs_z,c='g',s=5)  
-
-    plt.show()
-
-
-
-
-
-
-
-
-
-
-
-
-
-    # axs[4].plot(time_a,foot_wx, c='g')
-    # axs[5].plot(time_a,foot_wy, c='g')
-    # axs[6].plot(time_a,foot_wz, c='g')
+    axs[1].plot(time_a,foot_ax)
+    axs[2].plot(time_a,foot_ay)
+    axs[3].plot(time_a,foot_az)
+    axs[4].plot(time_a,foot_wx)
+    axs[5].plot(time_a,foot_wy)
+    axs[6].plot(time_a,foot_wz)
 
     # plt.show()
+
+
+    stable_contact_detection(f,foot_ax,foot_ay,foot_az,foot_wx,foot_wy,foot_wz)
     
-    # data = [ax,ay,wz,fx,fy,fz]
-
-
-    # means = mle_means(data)
-
-    # probs = contact_probability(means)
-
-    # friction_estimation(data,probs)
-
+    
