@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>friction_estimation</name>
+  <name>ProbabilisticContactEstimation</name>
   <version>0.0.0</version>
-  <description>The friction_estimation package</description>
+  <description>Contact estimation for legged robots. It works in real-time with an average ~500 hz refresh rate.</description>
 
   <maintainer email="michael@todo.todo">michael</maintainer>
 
