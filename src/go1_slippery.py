@@ -194,18 +194,49 @@ def stable_contact_detection(f,ax,ay,az,wx,wy,wz):
 
     return
 def plot_probs(f,probs_ax,probs_ay,probs_az,probs_wx,probs_wy,probs_wz):
-    time = np.arange(probs_ax.shape[0])
-    time_f = np.arange(0,f.shape[0]*0.002,0.002)
+    total = probs_ax*probs_ay*probs_az*probs_wx*probs_wy*probs_wz
+    total = total[647:]
+    force = f[1185:5247]
+    
 
-    fig, axs = plt.subplots(8)  
-    axs[0].plot(time_f,f)
-    axs[1].scatter(time,probs_ax,c='g',s=5)  
-    axs[2].scatter(time,probs_ay,c='g',s=5)  
-    axs[3].scatter(time,probs_az,c='g',s=5)  
-    axs[4].scatter(time,probs_wx,c='g',s=5)  
-    axs[5].scatter(time,probs_wy,c='g',s=5)  
-    axs[6].scatter(time,probs_wz,c='g',s=5)  
-    axs[7].scatter(time,probs_ax*probs_ay*probs_az*probs_wx*probs_wy*probs_wz,c='g',s=5)  
+
+    force = force[:int(4.772/0.002)]
+    total = total[:int(4.970/0.004)]
+
+
+
+    time = np.arange(0,total.shape[0]*0.004,0.004)
+    time_f = np.arange(0,force.shape[0]*0.002,0.002)
+
+    labels = np.arange(1,5,0.5)
+    fig, axs = plt.subplots(2)  
+    axs[0].plot(time_f,force)
+    axs[0].set_ylabel(r'$F_z(N)$ ',fontsize=20)
+    axs[0].set_xticklabels(labels)
+
+    # axs[1].scatter(time,probs_ax,c='g',s=5)  
+    # axs[2].scatter(time,probs_ay,c='g',s=5)  
+    # axs[3].scatter(time,probs_az,c='g',s=5)  
+    # axs[4].scatter(time,probs_wx,c='g',s=5)  
+    # axs[5].scatter(time,probs_wy,c='g',s=5)  
+    # axs[6].scatter(time,probs_wz,c='g',s=5)  
+    axs[1].scatter(time,total,c='g',s=5)  
+    axs[1].set_ylabel(r'$P_{tot}(stable)$',fontsize=20)
+    axs[1].set_xlabel(r'Time (s)',fontsize=16)
+    axs[0].axvspan(0, 2.732, facecolor='purple', alpha=0.2)#,label = r"$\mu_s = 0.03$")
+    axs[1].axvspan(0, 2.846, facecolor='purple', alpha=0.2,label = r"$\mu_s << 0.1$")
+    axs[1].set_xticklabels(labels)
+
+
+    axs[0].tick_params(
+        axis='x',          # changes apply to the x-axis
+        which='both',      # both major and minor ticks are affected
+        bottom=False,      # ticks along the bottom edge are off
+        top=False,         # ticks along the top edge are off
+        labelbottom=False) # labels along the bottom edge are off
+
+    fig.subplots_adjust(wspace=0, hspace=0)
+    plt.legend(fontsize=14)
     plt.show()
     return
     
@@ -231,14 +262,14 @@ if __name__ == "__main__":
     time_f = np.arange(0,f.shape[0]*0.002,0.002)
     time_a = np.arange(0,foot_az.shape[0]*0.004,0.004)
     
-    fig, axs = plt.subplots(7)
-    axs[0].plot(time_f,f)
-    axs[1].plot(time_a,foot_ax)
-    axs[2].plot(time_a,foot_ay)
-    axs[3].plot(time_a,foot_az)
-    axs[4].plot(time_a,foot_wx)
-    axs[5].plot(time_a,foot_wy)
-    axs[6].plot(time_a,foot_wz)
+    # fig, axs = plt.subplots(7)
+    # axs[0].plot(time_f,f)
+    # axs[1].plot(time_a,foot_ax)
+    # axs[2].plot(time_a,foot_ay)
+    # axs[3].plot(time_a,foot_az)
+    # axs[4].plot(time_a,foot_wx)
+    # axs[5].plot(time_a,foot_wy)
+    # axs[6].plot(time_a,foot_wz)
 
 
 

@@ -1,13 +1,18 @@
 #! /usr/bin/env python3
+from curses import start_color
 from sklearn.neighbors import KernelDensity
 import numpy as np
 from numpy import genfromtxt
 import math
 from scipy import signal as sp 
+import time 
+import scipy.stats as stats
+import matplotlib
+matplotlib.rcParams['text.usetex'] = True
 import matplotlib.pyplot as plt
 import random
 
-
+plt.rcParams['text.usetex'] = True
 
 # Indices for features (file structure)
 id_Fx,id_Fy,id_Fz,id_Tx,id_Ty,id_Tz = 0,1,2,3,4,5
@@ -34,10 +39,10 @@ friction_coef = 0.1
 def prepare_data():
 
     # Read Dataset
-    data_filename = "../data/atlas_1000hz_01gr_003road.csv"
+    data_filename = "../data/atlas_1000hz_01ground.csv"
+
 
     data = np.genfromtxt(data_filename,delimiter=",")
-
 
     Fx = data[:,0]
     Fy = data[:,1]
@@ -93,7 +98,7 @@ def get_axis_probability(start_value, end_value, eval_points, kd):
 
     x = np.linspace(start_value, end_value, N)[:, np.newaxis]  # Generate values in the range
     kd_vals = np.exp(kd.score_samples(x))  # Get PDF values for each x
-    probability = np.sum(kd_vals * step)  # Approximate the integral of the PDF
+    probability = np.sum(kd_vals * step)   # Approximate the integral of the PDF
     return probability.round(4)
 
 
@@ -133,7 +138,7 @@ def stable_contact_detection(ax,ay,az,wx,wy,wz):
     prob_wx = get_axis_probability(-thres_w,thres_w,eval_samples,kd_wx)
     prob_wy = get_axis_probability(-thres_w,thres_w,eval_samples,kd_wy)
     prob_wz = get_axis_probability(-thres_w,thres_w,eval_samples,kd_wz)
-    stable_prob_tangential[0:batch_size] =  prob_ax*prob_ay#*prob_wz
+    stable_prob_tangential[0:batch_size] =  prob_ax*prob_ay*prob_wz
     stable_prob_vertical[0:batch_size] =  prob_az*prob_wx*prob_wy
 
 
@@ -169,49 +174,178 @@ def stable_contact_detection(ax,ay,az,wx,wy,wz):
 
     return stable_prob_tangential,stable_prob_vertical
 
+def plot_paper(ax):
+    ax_batch = ax[1280:1380]
+    ax_batch[0] = -1
+    
+    kde = KernelDensity(bandwidth= sigma_a, kernel='gaussian')
+    kde.fit(ax_batch[:,None])
+    x_d = np.arange(-1.2,0.75,0.001)
 
+    thres_a = 0.1
+    log_prob = kde.score_samples(x_d[:,None])
+
+    # fig, ax = plt.subplots(figsize=(6, 4), tight_layout=True)
+    plt.fill_between(x_d,np.exp(log_prob),alpha = 0.5)
+    plt.plot(ax_batch,np.full_like(ax_batch,-0.01),'|k',markeredgewidth = 1, label ="samples", c= 'b')
+
+    plt.xlabel(r"Acceleration-x ($\frac{m}{s^2}$)", fontsize = 16)
+    
+    plt.ylabel(r"PDF", fontsize = 16)
+    plt.axvline(x =-0.1 , c= 'r', label = "limits")
+    plt.axvline(x = 0.1 , c = 'r')
+    plt.legend(fontsize = 16)
+    # plt.xlim(-0.5,0.7)
+    # ax.title("Probability Density Function")
+
+
+    plt.show()
+    
+
+
+def get_labels(fx,fy,fz):
+    labels = np.empty(fz.shape[0])
+    max_fz= np.max(fz)
+    threhsold = friction_coef*max_fz
+
+    for i in range(fz.shape[0]):
+        if i < 6220:
+            if fz[i] > 0 and np.sqrt(fx[i]**2+fy[i]**2)-0.1*fz[i] < -50:
+                labels[i] = 1
+            else:
+                labels[i] = 0 
+        else:
+            if fz[i] > 0 and np.sqrt(fx[i]**2+fy[i]**2)-0.03*fz[i] < -10:
+                labels[i] = 1
+            else:
+                labels[i] = 0 
+
+    return labels
+
+def compute_rmse(prob,labels):
+    sum_rms = 0 
+    for i in range(prob.shape[0]):
+        sum_rms += (labels[i]-prob[i])**2
+    sum_rms = np.sqrt(sum_rms/prob.shape[0])
+    print(sum_rms)
+
+def make_histogram(prob,labels):
+    difs = np.empty(prob.shape[0])
+    for i in range(prob.shape[0]):
+        difs[i] = abs(prob[i]-labels[i])
+
+    return difs
 if __name__ == "__main__":
+
+    plt.rcParams.update({'font.size': 12})
 
 
     ax, ay,az,wx,wy, wz, fx, fy, fz, labels = prepare_data() 
-    
+    ax = ax[21:]
+    ay = ay[21:]
+    az = az[21:]
+    wx = wx[21:]
+    wy = wy[21:]
+    wz = wz[21:]
+    fx = fx[21:]
+    fy = fy[21:]
+    fz = fz[21:]
 
-    probs_xy,probs_z = stable_contact_detection(ax,ay,az,wx,wy,wz)
+    plot_paper(ax)
 
+    labels = get_labels(fx,fy,fz)
 
+    rotella = np.genfromtxt("../data/rotella_probs.csv",delimiter=",")
+    total   = np.genfromtxt("../data/my_probs.csv",delimiter=",")
+
+    difs_rot  = make_histogram(rotella,labels)
+
+    # plot_paper(ax)
+
+    # probs_xy,probs_z = stable_contact_detection(ax,ay,az,wx,wy,wz)
+
+    # total = probs_xy*probs_z
+    # np.savetxt("my_probs.csv",total, delimiter=",")
+
+    difs_our = make_histogram(total,labels)
+
+    # compute_rmse(total,labels)
+
+    fig, (ax1, ax2) = plt.subplots(1, 2)
+    ax1.hist(difs_our,bins = 12)
+    ax2.hist(difs_rot,bins = 12)
+    ax1.set_ylim([0, 17000])
+    ax2.set_ylim([0, 17000])
+    fig.subplots_adjust(wspace=0.1, hspace=0)
+
+    ax1.set_xlabel("Proposed method: Difference from ground truth",fontsize=16)
+    ax2.set_xlabel("Method [10]: Difference from ground truth",fontsize=16)
+
+    # ax2.spines["bottom"].set_linewidth(6)
+    # ax2.tick_params(axis='both', which='major', labelsize=10)
+    # ax1.tick_params(axis='both', which='major', labelsize=10)
+    # ax1.xticks(fontsize=12)
+    # ax2.xticks(fontsize=12)
+    ax1.set_ylabel("Frequency",fontsize=16)
+
+    plt.show()  
+
+    '''
     time = np.arange(wz.shape[0])
-    fig, axs = plt.subplots(6)
-    axs[0].scatter(time,probs_xy,c='g',s=5)  
-    axs[0].set_title("Tangential prob")  
+    fig, axs = plt.subplots(3)
 
-    axs[1].scatter(time,probs_z,c='g',s=5)    
-    axs[1].set_title("Vertical prob")  
+    axs[0].plot(time,fz)
+    axs[0].set_ylabel(r'$F_z(N)$ ',fontsize=20)
+    # axs[0].axvspan(6520, 14189, facecolor='purple', alpha=0.2,label = r"$\mu_s = 0.03$")
 
-    axs[2].set_title("TOTAL prob")  
-    axs[2].scatter(time,probs_xy*probs_z,c='g',s=5)
+
+    # axs[1].scatter(time,probs_xy,c='g',s=5)
+    # axs[1].set_ylabel(r'$P_{xy}(stable)$',fontsize=20)
+
+    # axs[2].scatter(time,probs_z,c='g',s=5)
+    # axs[2].set_ylabel(r'$P_{z}(stable)$',fontsize=20)
+
+
+    axs[1].scatter(time,probs_xy*probs_z,c='g',s=5, label = "predicted")
+    axs[1].set_ylabel(r'$P_{tot}(stable)$',fontsize=20)
+    axs[1].scatter(time,labels,c = 'r', s= 2, label ="ground truth")
+
+    axs[2].scatter(time,rotella,c= 'b', s = 5,label = "FCM predictions")
+    axs[2].scatter(time,labels,c = 'r', s= 2, label ="ground truth")
+    axs[2].set_ylabel(r'$P_{tot}(stable)$',fontsize=20)
+
+    axs[2].set_xlabel(r'Time (ms)',fontsize=16)
+
+    # axs[1].axvline(x = 3884, c= 'r')
+    # axs[1].axvline(x = 5340, c= 'r')
+    # axs[1].axvline(x = 7810, c= 'r')
+    # axs[1].axvline(x = 9410, c= 'r')
+    # axs[1].axvline(x = 11830, c= 'r')
+    # axs[1].axvline(x = 13310, c= 'r')
     
-    axs[3].set_title("Vertical GRF")  
-    axs[3].plot(time,fz)
+    # axs[0].axvspan(6520, 14189, facecolor='purple', alpha=0.2)
+    # axs[1].axvspan(6520, 14189, facecolor='purple', alpha=0.2,label = r"$\mu_s = 0.03$")
 
-    axs[4].set_title("Linear acceleration x")  
-    axs[4].plot(time,ax)
 
-    axs[5].set_title("Linear acceleration y")  
-    axs[5].plot(time,ay)
+    # plt.plot(time,friction_coef*fz)
+    # plt.plot(time,np.sqrt(fx**2+fy**2))
+    # plt.show()
+
+    plt.legend(fontsize=16)
+    # plt.subplots_adjust(left=0.1,       
+    #                     bottom=0.1, 
+    #                     right=0.9, 
+    #                     top=0.9, 
+    #                     wspace=0.4, 
+    #                     hspace=0.4)
+
+    # axs[4].set_title("Linear acceleration x")  
+    # axs[4].plot(time,ax)
+
+    # axs[5].set_title("Linear acceleration y")  
+    # axs[5].plot(time,ay)
+    fig.subplots_adjust(wspace=0, hspace=0)
+
     plt.show() 
 
-
-
-    # ax = ax.reshape((len(ax),1))
-    # kde.fit(ax)
-
-    # values = np.arange(-0.2,1,0.01)
-    # values = values.reshape((len(values), 1))
-    
-    # probabilities = kde.score_samples(values)
-    # probabilities = np.exp(probabilities)
-
-    # plt.hist(ax,bins=30)
-    # plt.plot(values[:],probabilities)
-    # plt.show()
-    
+    '''

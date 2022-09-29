@@ -37,8 +37,8 @@ include_directories(
 #add_executable(contact_estimation src/contact_estimation.cpp)
 #add_dependencies(contact_estimation ${catkin_EXPORTED_TARGETS})
 #target_link_libraries(contact_estimation ${catkin_LIBRARIES} ${EIGEN3_LIBRARIES} ${Boost_LIBRARIES})
-catkin_install_python(PROGRAMS src/contact.py src/cdf_go1.py src/contactTalos.py
-DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
+# catkin_install_python(PROGRAMS src/contact.py src/cdf_go1.py src/contact_talos.py
+# DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+# )
 
 
