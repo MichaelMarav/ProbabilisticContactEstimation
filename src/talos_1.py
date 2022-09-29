@@ -212,30 +212,48 @@ if __name__ == "__main__":
     az += bias_az
 
 
-
-    # time = np.arange(fx.shape[0])
-    # fig,axs = plt.subplots(4)
+    time = np.arange(fx.shape[0])
+    # fig,axs = plt.subplots(7)
     # axs[0].plot(time,fz)
-    # axs[1].plot(time,wx)
-    # axs[2].plot(time,wy)
-    # axs[3].plot(time,wz)
-    # plt.show()
+    # axs[1].plot(time,ax)
+    # axs[2].plot(time,ay)
+    # axs[3].plot(time,az)
+    # axs[4].plot(time,wx)
+    # axs[5].plot(time,wy)
+    # axs[6].plot(time,wz)
+
 
     stable_ax, stable_ay, stable_az, stable_wx, stable_wy, stable_wz = stable_contact_detection(ax,ay,az,wx,wy,wz)
 
-
-
-    time = np.arange(fx.shape[0])
+    time_f = np.arange(340)
+    time_p = np.arange(0,690*0.01,0.01)
     fig,axs = plt.subplots(2)
-    axs[0].plot(time,fz)
-    # axs[1].scatter(time,stable_ax,c='g',s=5)
-    # axs[2].scatter(time,stable_ay,c='g',s=5)
-    # axs[3].scatter(time,stable_az,c='g',s=5)
-    # axs[4].scatter(time,stable_wx,c='g',s=5)
-    # axs[5].scatter(time,stable_wy,c='g',s=5)
-    # axs[6].scatter(time,stable_wz,c='g',s=5)
+    axs[0].plot(time_f,fz[920:1260])
+    total = stable_ax*stable_ay*stable_az*stable_wx
+    axs[1].scatter(time_p,total[1810:2500],c='g',s=5)
 
-    axs[1].scatter(time,stable_ax*stable_ay*stable_az*stable_wx*stable_wy*stable_wz,c ='g',s =5)
+    # axs[2].scatter(time,stable_ax*stable_ay*stable_az,c='g',s=5)
+    # axs[3].scatter(time,stable_ax*stable_az,c='g',s=5)
+    axs[0].set_ylabel(r'$F_z(N)$ ',fontsize=20)
+
+    axs[1].set_ylabel(r'$P_{tot}(stable)$',fontsize=20)
+    axs[1].set_xlabel(r'Time (s)',fontsize=16)
+
+
+    # time = np.arange(fx.shape[0])
+    # fig,axs2 = plt.subplots(7)
+    # axs2[0].plot(time,fz)
+    # axs2[1].scatter(time,stable_ax,c='g',s=5)
+    # axs2[2].scatter(time,stable_ay,c='g',s=5)
+    # axs2[3].scatter(time,stable_az,c='g',s=5)
+    # axs2[4].scatter(time,stable_wx,c='g',s=5)
+    # axs2[5].scatter(time,stable_wy,c='g',s=5)
+    # axs2[6].scatter(time,stable_wz,c='g',s=5)
+
+    # axs[1].scatter(time,stable_ax*stable_ay*stable_az*stable_wx*stable_wy*stable_wz,c ='g',s =5)
+
+    fig.subplots_adjust(wspace=0, hspace=0)
+
     plt.show()
 
     
