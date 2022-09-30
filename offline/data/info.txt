@@ -1,16 +1,14 @@
 dataset collected from raisim, 
 ATLAS robot locomotion using  LIPM locomotion
-Variety of friction coefficient, each csv different friction coefficient
-for the Right foot of atlas
 
 Labels for stable contact are produced using coulomb friction  model
-Each .csv is 20 steps long
 
 ----------------------------------------------
 
-go1 -> 1000 Hz 
-The "IMU" is set on the link of the foot
-time, vel_x, vel_y, vel_z , w_x , w_y , w_z
+GO1_* 
+
+datasets collected for a GO1 quadrupedal robot with IMU measurements moutned on the foot
++ force measurement (default sensor)
 
 
 

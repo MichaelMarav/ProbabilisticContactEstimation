@@ -50,7 +50,7 @@ class pce:
     '''
 
     def __init__(self):
-        self.filename   = "../data/go1_matress.csv"
+        self.filename   = "../data/dataset_spike_wd40_extra.csv"
         self.batch_size = 50
         self.eval_samples = 500
 
@@ -236,8 +236,8 @@ class pce:
         axs[1].scatter(time_imu,probs,c='g',s=5)  
         axs[1].set_ylabel(r'$P_{tot}(stable)$',fontsize=20)
         axs[1].set_xlabel(r'Time (s)',fontsize=16)
-        axs[0].axvspan(3.326, 4.673, facecolor='purple', alpha=0.2)#,label = r"$\mu_s = 0.03$")
-        axs[1].axvspan(3.525, 4.960, facecolor='purple', alpha=0.2)
+        # axs[0].axvspan(3.326, 4.673, facecolor='purple', alpha=0.2)#,label = r"$\mu_s = 0.03$")
+        # axs[1].axvspan(3.525, 4.960, facecolor='purple', alpha=0.2)
         
         axs[0].tick_params(
         axis='x',          # changes apply to the x-axis

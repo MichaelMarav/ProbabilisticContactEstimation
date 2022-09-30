@@ -224,15 +224,8 @@ def stable_contact_detection(f,ax,ay,az,wx,wy,wz):
     return
 def plot_probs(f,probs_ax,probs_ay,probs_az,probs_wx,probs_wy,probs_wz):
     total = probs_ax*probs_ay*probs_az*probs_wx*probs_wy*probs_wz
-    total = total[647:]
-    force = f[1185:5247]
-    
 
-
-    force = force[:int(4.772/0.002)]
-    total = total[:int(4.970/0.004)]
-
-
+    force = f
 
     time = np.arange(0,total.shape[0]*0.004,0.004)
     time_f = np.arange(0,force.shape[0]*0.002,0.002)

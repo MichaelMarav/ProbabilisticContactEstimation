@@ -38,7 +38,7 @@ from sklearn.neighbors import KernelDensity
 
 
 # FORCES AND BASE IMU ---> 500 hz
-# Foot imu ---> 260
+# Foot imu ---> 250
 
 
 # Indices for features (file structure)
@@ -317,7 +317,7 @@ if __name__ == "__main__":
     axs[0].plot(time_f,f)
     axs[1].scatter(time_a,probs_x,c='g',s=5)  
     axs[2].scatter(time_a,probs_y,c='g',s=5)  
-    axs[3].scatter(time_a,probs_x*probs_y,c='g',s=5)  
+    axs[3].scatter(time_a,probs_z,c='g',s=5)  
 
     plt.show()
     # fig, axs = plt.subplots(7)
