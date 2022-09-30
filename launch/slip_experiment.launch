@@ -1,0 +1,12 @@
+<launch>
+
+    <!-- init IMU FORCES
+    <node pkg="go1_motion" name="init_imu_force" type="init_imu_force" /> -->
+
+    <!-- Contact prob -->
+    <node name="go1_pce" pkg="go1_motion" type="go1_pce.py"></node>
+
+    <!-- Spike in motion -->
+    <node pkg="go1_motion" name="slip_recovery" type="slip_recovery" />
+
+</launch>

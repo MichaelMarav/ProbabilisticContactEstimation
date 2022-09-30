@@ -1,50 +1,60 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(ProbabilisticContactEstimation)
+project(ProbabilisticContactEstimaton)
 
-
+add_compile_options(-std=c++11)
+include_directories(
+  include
+  ${catkin_INCLUDE_DIRS}
+)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
-  std_msgs
-  nav_msgs
-  sensor_msgs
+  unitree_legged_msgs
   geometry_msgs
-  message_filters
 )
 
-find_package(Boost REQUIRED COMPONENTS
-signals
+catkin_package(
+ INCLUDE_DIRS include
+ LIBRARIES ProbabilisticContactEstimaton
+ CATKIN_DEPENDS roscpp rospy std_msgs unitree_legged_msgs
+ DEPENDS system_lib
 )
 
-catkin_package()
+
+message("-- CMAKE_SYSTEM_PROCESSOR: ${CMAKE_SYSTEM_PROCESSOR}")
+if("${CMAKE_SYSTEM_PROCESSOR}" MATCHES "x86_64.*")
+  set(ARCH amd64)
+else()
+  set(ARCH arm64)
+endif()
+set(LEGGED_SDK_NAME -pthread libunitree_legged_sdk_${ARCH}.so lcm)
+
+set(EXTRA_LIBS ${LEGGED_SDK_NAME} lcm)
+
+
+set(CMAKE_CXX_FLAGS "-O3 -fPIC")
+
 include_directories(
-${catkin_INCLUDE_DIRS}
-${Boost_INCLUDE_DIRS}
+    include
+    ${catkin_INCLUDE_DIRS}
+    /home/despargy/go1_ws/src/unitree_legged_sdk/include
 )
 
-catkin_package()
+link_directories(/home/despargy/go1_ws/src/unitree_legged_sdk/lib)
 
-include_directories(
-  ${catkin_INCLUDE_DIRS}
+add_executable(slip_recovery src/exe/slip_recovery.cpp)
+target_link_libraries(slip_recovery ${EXTRA_LIBS} ${catkin_LIBRARIES})
+add_dependencies(slip_recovery ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+add_executable(init_imu_force src/exe/init_imu_force.cpp)
+target_link_libraries(init_imu_force ${EXTRA_LIBS} ${catkin_LIBRARIES})
+add_dependencies(init_imu_force ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+add_executable(check_forces src/exe/check_forces.cpp)
+target_link_libraries(check_forces ${EXTRA_LIBS} ${catkin_LIBRARIES})
+add_dependencies(check_forces ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+catkin_install_python(PROGRAMS src/exe/go1_pce.py
+DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
-
-#add_executable(friction_estimation src/friction.cpp)
-#add_dependencies(friction_estimation ${catkin_EXPORTED_TARGETS})
-#target_link_libraries(friction_estimation ${catkin_LIBRARIES} ${EIGEN3_LIBRARIES} ${Boost_LIBRARIES})
-
-
-#add_executable(contact_estimation src/contact_estimation.cpp)
-#add_dependencies(contact_estimation ${catkin_EXPORTED_TARGETS})
-#target_link_libraries(contact_estimation ${catkin_LIBRARIES} ${EIGEN3_LIBRARIES} ${Boost_LIBRARIES})
-
-#catkin_install_python(PROGRAMS src/contact.py
-#DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-#)
-
-# catkin_install_python(PROGRAMS src/contact.py src/cdf_go1.py src/contact_talos.py
-# DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-# )
-
-
-
