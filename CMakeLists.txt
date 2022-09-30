@@ -43,18 +43,18 @@ include_directories(
 
 link_directories(/home/despargy/go1_ws/src/unitree_legged_sdk/lib)
 
-add_executable(slip_recovery src/exe/slip_recovery.cpp)
+add_executable(slip_recovery src/slip_recovery.cpp)
 target_link_libraries(slip_recovery ${EXTRA_LIBS} ${catkin_LIBRARIES})
 add_dependencies(slip_recovery ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-add_executable(init_imu_force src/exe/init_imu_force.cpp)
+add_executable(init_imu_force src/init_imu_force.cpp)
 target_link_libraries(init_imu_force ${EXTRA_LIBS} ${catkin_LIBRARIES})
 add_dependencies(init_imu_force ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-add_executable(check_forces src/exe/check_forces.cpp)
+add_executable(check_forces src/check_forces.cpp)
 target_link_libraries(check_forces ${EXTRA_LIBS} ${catkin_LIBRARIES})
 add_dependencies(check_forces ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-catkin_install_python(PROGRAMS src/exe/go1_pce.py
+catkin_install_python(PROGRAMS src/go1_pce.py
 DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )

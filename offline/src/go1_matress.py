@@ -63,7 +63,7 @@ friction_coef = 0.1
 def prepare_data():
 
     # Read Dataset
-    data_filename = "../data/dataset_spike_stroma.csv"
+    data_filename = "../data/go1_matress.csv"
 
     data = np.genfromtxt(data_filename,delimiter=",")
     
