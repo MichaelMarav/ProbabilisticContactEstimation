@@ -38,6 +38,7 @@ from sklearn.neighbors import KernelDensity
 import time
 
 
+data_filenames = ["../data/GO1_normal_surface.csv","../data/GO1_matress.csv","../data/GO1_slippery_surface.csv"]
 
 class pce:
     '''
@@ -50,7 +51,7 @@ class pce:
     '''
 
     def __init__(self):
-        self.filename   = "../data/dataset_spike_wd40_extra.csv"
+        self.filename   = data_filenames[2]
         self.batch_size = 50
         self.eval_samples = 500
 
