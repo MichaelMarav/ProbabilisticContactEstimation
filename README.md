@@ -2,7 +2,7 @@
 
 This ROS package contains:
 
-* A **real-time contact detection module** that operates in real-time(~500hz). It has been tested on a quadrupedal GO1 and a TALOS humanoid robot. There is a need for IMU mounted on the foot and it predicts the stable contact probability.
+* A **real-time contact detection module** that operates in real-time(~500hz) and uses only IMU mounted on the foot of the robot. It has been tested on a quadrupedal GO1, a real TALOS humanoid robot and a simulated ATLAS humanoid. 
 * **Datasets**  (*./offline/data/*) from an ATLAS simulated humanoid in RAISIM and a real GO1 quadruped on various terrains
 * An offline contact probability estimator module to test on custom datasets.
 
