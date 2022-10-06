@@ -41,4 +41,61 @@ The refresh rate is 250 hz for the IMU and 500 hz for the Fz
 * *GO1_normal_surface.csv*: Walking on a normal surface.(these data are unsynchronized)
 * *GO1_slippery_surface.csv*: Walking on a low friction surface. A greased smooth surface, extremely slippery.
 
-# Instruction for operating this in real time will be added soon
+
+#  Real-time Probabilistic Contact State Estimation 
+
+Using Unitree's Go1 quadrupedal robot and low-end IMU sensor (Arduino RP2040 integrated IMU) mounted on the foot.
+
+## Description
+
+An analytical package description of the real experiment with the Go1 robotic dog of Unitree. This package is developed to extra support the theoretical analysis and the simulated experiments of the submitted paper to ICRA 2022 with title "Probabilistic Contact State Estimation for Legged Robots using Inertial Information". 
+
+
+# Dependencies
+## Unitree's Go1 legged robot:
+
+*  [unitree_ros_to_real](https://github.com/unitreerobotics/unitree_ros_to_real)
+* [unitree\_ros](https://github.com/unitreerobotics/unitree_ros)
+* [unitree_legged_sdk](https://github.com/unitreerobotics/unitree_legged_sdk)
+## Arduino Nano RP2040's IMU:
+* [rosserial_python](http://wiki.ros.org/rosserial_python)
+
+##  System 
+*  Ubuntu 20.04
+* ROS Noetic
+
+# Installing
+
+* Follow the instructions of the above listed depended packages.
+* Under your 'workspace/src', git clone ProbabilisticContactEstimation package.
+```
+git clone https://github.com/MichaelMarav/ProbabilisticContactEstimation
+```
+# Executing program
+
+## Terminal 1
+Connect to the real Go1 robot
+```
+sudo ProbabilisticContactEstimation/BashScripts/ipconfig.sh
+```
+```
+roslaunch unitree_legged_real real.launch
+```
+## Terminal 2
+Arduino pubs IMU data at ```\imu```
+```
+sudo ProbabilisticContactEstimation/BashScripts/imu.sh
+```
+
+## Terminal 3
+Initialize IMU bias info 
+* Set your path of "/../ws/src/ProbabilisticContactEstimation/src/exe/imuBias.txt", at line 137 of 'init_imu_force.cpp' .
+```
+rosrun ProbabilisticContactEstimation init_imu_force
+```
+```
+rosrun ProbabilisticContactEstimation slip_recovery
+```
+# Experiment setup
+
+Mount IMU on a leg (or multiple legs) of Go1 Unitree's. Set the communication between Arduino Nano PR2040 and your Laptop through USB - micro cable. 
