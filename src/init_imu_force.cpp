@@ -67,7 +67,7 @@ int main(int argc, char **argv)
               << "Press Enter to continue..." << std::endl;
     std::cin.ignore();
     
-    printf("Wait for 4sec...\t");
+    printf("Wait for 4sec...\n");
     
     ros::NodeHandle nh;
 
@@ -77,6 +77,13 @@ int main(int argc, char **argv)
     ros::Subscriber force_sub = nh.subscribe("high_state", 1, initforceCallback);
 
     long num_collect  = 0;
+
+    std::string bias_file;
+    if (!nh.getParam("/imu_bias_txt",bias_file))
+    {
+        ROS_ERROR("Param /imu_bias_txt missing");
+    }
+    std::cout<<bias_file<<std::endl;
 
     while (ros::ok() and num_collect < 1000)
     {
@@ -132,7 +139,7 @@ int main(int argc, char **argv)
 
 
     ofstream myfile;    // file for imu sensor things
-    myfile.open ("/home/despargy/go1_ws/src/go1_motion/src/exe/imuBias.txt");
+    myfile.open (bias_file);
 
     myfile << mean_ax << ',' << mean_ay << ',' << mean_az << ',';
     myfile << mean_wx << ',' << mean_wy << ','<< mean_wz << ',';

@@ -1,7 +1,8 @@
 <launch>
+    <param name="imu_bias_txt" value="$(find probabilistic_contact_estimation)/src/imuBias.txt"/>
 
-    <!-- init IMU FORCES
-    <node pkg="go1_motion" name="init_imu_force" type="init_imu_force" /> -->
+    <!-- init IMU FORCES -->
+    <!-- <node pkg="go1_motion" name="init_imu_force" type="init_imu_force" />  -->
 
     <!-- Contact prob -->
     <node name="go1_pce" pkg="go1_motion" type="go1_pce.py"></node>
