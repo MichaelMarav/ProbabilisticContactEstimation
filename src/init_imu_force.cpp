@@ -8,11 +8,9 @@
 #include <boost/accumulators/statistics.hpp>
 #include <iostream>
 #include <unitree_legged_msgs/HighState.h>
-#include "/home/despargy/go1_ws/src/unitree_legged_sdk/include/unitree_legged_sdk/unitree_legged_sdk.h"
 
 using namespace boost::accumulators;
 using namespace std;
-using namespace UNITREE_LEGGED_SDK;
 
 std::vector< double > arr_ax, arr_ay, arr_az;
 std::vector< double > arr_wx, arr_wy, arr_wz;

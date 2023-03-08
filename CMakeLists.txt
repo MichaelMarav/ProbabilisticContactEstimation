@@ -1,11 +1,8 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(ProbabilisticContactEstimaton)
+project(ProbabilisticContactEstimation)
 
 add_compile_options(-std=c++11)
-include_directories(
-  include
-  ${catkin_INCLUDE_DIRS}
-)
+
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
@@ -13,6 +10,9 @@ find_package(catkin REQUIRED COMPONENTS
   unitree_legged_msgs
   geometry_msgs
 )
+
+find_package(Boost REQUIRED COMPONENTS system)
+
 
 catkin_package(
  INCLUDE_DIRS include
@@ -22,26 +22,27 @@ catkin_package(
 )
 
 
-message("-- CMAKE_SYSTEM_PROCESSOR: ${CMAKE_SYSTEM_PROCESSOR}")
-if("${CMAKE_SYSTEM_PROCESSOR}" MATCHES "x86_64.*")
-  set(ARCH amd64)
-else()
-  set(ARCH arm64)
-endif()
-set(LEGGED_SDK_NAME -pthread libunitree_legged_sdk_${ARCH}.so lcm)
+# message("-- CMAKE_SYSTEM_PROCESSOR: ${CMAKE_SYSTEM_PROCESSOR}")
+# if("${CMAKE_SYSTEM_PROCESSOR}" MATCHES "x86_64.*")
+#   set(ARCH amd64)
+# else()
+#   set(ARCH arm64)
+# endif()
+# set(LEGGED_SDK_NAME -pthread libunitree_legged_sdk_${ARCH}.so lcm)
 
-set(EXTRA_LIBS ${LEGGED_SDK_NAME} lcm)
+# set(EXTRA_LIBS ${LEGGED_SDK_NAME} lcm)
 
 
-set(CMAKE_CXX_FLAGS "-O3 -fPIC")
+# set(CMAKE_CXX_FLAGS "-O3 -fPIC")
 
 include_directories(
     include
-    ${catkin_INCLUDE_DIRS}
+    ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIR}
+    ${unitree_legged_msgs_INCLUDE_DIRS}
     /home/despargy/go1_ws/src/unitree_legged_sdk/include
 )
-
 link_directories(/home/despargy/go1_ws/src/unitree_legged_sdk/lib)
+link_directories($(catkin_LIB_DIRS) lib)
 
 add_executable(slip_recovery src/slip_recovery.cpp)
 target_link_libraries(slip_recovery ${EXTRA_LIBS} ${catkin_LIBRARIES})

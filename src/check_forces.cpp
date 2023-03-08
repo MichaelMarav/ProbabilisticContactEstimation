@@ -1,10 +1,7 @@
 #include <ros/ros.h>
 #include <unitree_legged_msgs/HighCmd.h>
 #include <unitree_legged_msgs/HighState.h>
-#include "/home/despargy/go1_ws/src/unitree_legged_sdk/include/unitree_legged_sdk/unitree_legged_sdk.h"
-#include "convert.h"
-
-using namespace UNITREE_LEGGED_SDK;
+// #include "convert.h"
 
 int main(int argc, char **argv)
 {
@@ -32,7 +29,7 @@ int main(int argc, char **argv)
 
         high_cmd_ros.head[0] = 0xFE;
         high_cmd_ros.head[1] = 0xEF;
-        high_cmd_ros.levelFlag = HIGHLEVEL;
+        high_cmd_ros.levelFlag = 0xee; //HIGHLEVEL;
         high_cmd_ros.mode = 0;
         high_cmd_ros.gaitType = 0;
         high_cmd_ros.speedLevel = 0;
