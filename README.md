@@ -20,7 +20,7 @@ $ ./go1_contact_estimation.py
 Please note in case you are using another robot, you  will need to fine-tune the threshold parameters inside the file by extracting them from a normal gait pattern (no slip). These thresholds are robot/control specific.(More details about how to extract them will be added soon)
 
 # Datasets
-### ATLAS
+### **ATLAS bipedal**
 All files at ./offline/data/ATLAS_ have the same structure: \
 Fx | Fy |  Fz | Tx | Ty | Tz | ax | ay | az | wx | wy | wz | label
 
@@ -31,7 +31,7 @@ Description
 * ATLAS_01ground_3steps.csv: 0.1 static friction, 3 steps of ATLAS
 * ATLAS_01ground_003slip.csv: 0.1 ground static friction, 0.03 static friction on extremely slippery surface.
 
-### GO1
+### **GO1 quadrupedal**
 All files at ./offline/data/ATLAS_ have the same structure: \
 | Fz | ax | ay | az | wx | wy | wz | 
 
@@ -71,12 +71,13 @@ An analytical package description of the real experiment with the Go1 robotic do
 ```
 git clone https://github.com/MichaelMarav/ProbabilisticContactEstimation
 ```
+Rename the package to "pce" (Compatible name for catkin package)
 # Executing program
 
 ## Terminal 1
 Connect to the real Go1 robot
 ```
-sudo ProbabilisticContactEstimation/BashScripts/ipconfig.sh
+sudo pce/BashScripts/ipconfig.sh
 ```
 ```
 roslaunch unitree_legged_real real.launch
@@ -84,17 +85,17 @@ roslaunch unitree_legged_real real.launch
 ## Terminal 2
 Arduino pubs IMU data at ```\imu```
 ```
-sudo ProbabilisticContactEstimation/BashScripts/imu.sh
+sudo pce/BashScripts/imu.sh
 ```
 
 ## Terminal 3
 Initialize IMU bias info 
-* Set your path of "/../ws/src/ProbabilisticContactEstimation/src/exe/imuBias.txt", at line 137 of 'init_imu_force.cpp' .
+* Set your path of "/.. /src/pce/src/imuBias.txt", at line 137 of 'init_imu_force.cpp' .
 ```
-rosrun ProbabilisticContactEstimation init_imu_force
+rosrun pce init_imu_force
 ```
 ```
-rosrun ProbabilisticContactEstimation slip_recovery
+rosrun pce slip_recovery
 ```
 # Experiment setup
 
