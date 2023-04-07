@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(ProbabilisticContactEstimation)
+project(pce)
 
 add_compile_options(-std=c++11)
 
@@ -16,7 +16,7 @@ find_package(Boost REQUIRED COMPONENTS system)
 
 catkin_package(
  INCLUDE_DIRS include
- LIBRARIES ProbabilisticContactEstimaton
+ LIBRARIES ${PROJECT_NAME}
  CATKIN_DEPENDS roscpp rospy std_msgs unitree_legged_msgs
  DEPENDS system_lib
 )
@@ -39,9 +39,9 @@ include_directories(
     include
     ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIR}
     ${unitree_legged_msgs_INCLUDE_DIRS}
-    /home/despargy/go1_ws/src/unitree_legged_sdk/include
+    <path-to-sdk>/unitree_legged_sdk/include
 )
-link_directories(/home/despargy/go1_ws/src/unitree_legged_sdk/lib)
+link_directories(<path-to-sdk>//unitree_legged_sdk/lib)
 link_directories($(catkin_LIB_DIRS) lib)
 
 add_executable(slip_recovery src/slip_recovery.cpp)

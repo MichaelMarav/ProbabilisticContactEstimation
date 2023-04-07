@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>ProbabilisticContactEstimation</name>
+  <name>pce</name>
   <version>0.0.0</version>
   <description>Probabilistic Contact Estimation for Legged Robots in Real-time (~500HZ) + Offline data for ATLAS simulated and real GO1 quadrupedal robot</description>
 
