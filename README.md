@@ -6,6 +6,8 @@ This ROS package contains:
 * **Datasets**  (*./offline/data/*) from an ATLAS simulated humanoid in RAISIM and a real GO1 quadruped on various terrains
 * An offline contact probability estimator module to test on custom datasets.
 
+The published manuscript can be found at: 
+https://ieeexplore.ieee.org/document/10161485
 # Setup
 The only dependency for the offline module is *sklearn*. Run:
 ```
@@ -100,3 +102,26 @@ rosrun pce slip_recovery
 # Experiment setup
 
 Mount IMU on a leg (or multiple legs) of Go1 Unitree's. Set the communication between Arduino Nano PR2040 and your Laptop through USB - micro cable. 
+
+# Citation
+If you are using this work please use the following citation:
+```
+@INPROCEEDINGS{10161485,
+
+  author={Maravgakis, Michael and Argiropoulos, Despina-Ekaterini and Piperakis, Stylianos and Trahanias, Panos},
+
+  booktitle={2023 IEEE International Conference on Robotics and Automation (ICRA)}, 
+
+  title={Probabilistic Contact State Estimation for Legged Robots using Inertial Information}, 
+
+  year={2023},
+
+  volume={},
+
+  number={},
+
+  pages={12163-12169},
+
+  doi={10.1109/ICRA48891.2023.10161485}}
+
+```
