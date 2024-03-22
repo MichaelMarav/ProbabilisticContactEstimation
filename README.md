@@ -1,5 +1,7 @@
 # Probabilistic Contact Estimation
 
+# CPP version 
+
 This ROS package contains:
 
 * A **real-time contact detection module** that operates in real-time(~500hz) and uses only IMU mounted on the foot of the robot. It has been tested on a quadrupedal GO1, a real TALOS humanoid robot and a simulated ATLAS humanoid. 
