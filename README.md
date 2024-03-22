@@ -34,7 +34,7 @@ Description
 * ATLAS_01ground_003slip.csv: 0.1 ground static friction, 0.03 static friction on extremely slippery surface.
 
 ### **GO1 quadrupedal**
-All files at ./offline/data/ATLAS_ have the same structure: \
+All files at ./offline/data/GO1_ have the same structure: \
 | Fz | ax | ay | az | wx | wy | wz | 
 
 The refresh rate is 250 hz for the IMU and 500 hz for the Fz 
