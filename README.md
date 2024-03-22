@@ -1,6 +1,6 @@
 # Probabilistic Contact Estimation
 
-# CPP version 
+## CPP version 
 
 * A **real-time contact detection module** 
 * **Datasets**  (*./offline/data/*) from an ATLAS simulated humanoid in RAISIM and a real GO1 quadruped on various terrains
@@ -45,26 +45,75 @@ An analytical package description of the real experiment with the Go1 robotic do
 
 
 # Dependencies
-## Kdepp:
-
-*  
+## Multidimensional kernel density estimator
+*  [kdepp](https://github.com/duncanmcn/kdepp.git)
 
 ##  System 
 *  Ubuntu 20.04
 
 # Installing
 
-* Follow the instructions of the above listed depended packages.
-* Under your 'workspace/src', git clone ProbabilisticContactEstimation package.
+* Under your 'workspace', git clone cpp_main branch of ProbabilisticContactEstimation package.
 ```
-git clone https://github.com/MichaelMarav/ProbabilisticContactEstimation
+git clone --branch cpp_main https://github.com/MichaelMarav/ProbabilisticContactEstimation
 ```
-Rename the package to "pce" (Compatible name for catkin package)
-# Executing program
+* In place of ProbabilisticContactEstimation/kdepp, git clone kdepp package
+```
+cd ProbabilisticContactEstimation 
+rm -rf kdepp
+git clone https://github.com/duncanmcn/kdepp.git
+```
+* Build ProbabilisticContactEstimation
+```
+mkdir build
+cd build
+cmake ..
+make -j16
+```
 
-## Terminal 1
+# Executing program 
 
+## Example
+```
+cd ProbabilisticContactEstimation/build/
+./pce_cpp
+```
+## Code explanasion 
 
+### Parameters of IMU sensor
+* Set line 74 of main.cpp:
+```
+FIRST_TIME_CALC_PARAMS = true;
+```
+* First time to compute bias and std: IMU Stationary.
+```
+  for (some time)
+      $store_data();
+  $compute_mean_std();
+```
+* Replace the printed value to 'include/pce_params.h'
+###  Main flow
+* Set line 74 of main.cpp:
+```
+FIRST_TIME_CALC_PARAMS = false;
+```
+* Initialize with IMU msgs 
+```
+for time=batch_size*dt
+  $init_things()
+```
+* Compute probability for each new msg
+```
+while (condition)
+  $update: imu_msg, Fz
+  $one_loop(imu_msg) or one_loop(Fz, imu_msg)
+  $save_probability() //in csv
+```
+* Plot probability for tuning ax, ay, az, wx, wy, wz thresshold defined in 'include/pce_params.h'
+```
+cd bags
+python3 plot_probs.py
+```
 # Citation
 If you are using this work please use the following citation:
 ```
