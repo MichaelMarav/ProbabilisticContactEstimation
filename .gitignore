@@ -2,3 +2,6 @@ __pycache__/
 .vscode/*
 .history/
 .~lock*
+build/*
+kdepp/build/*
+kdepp/meson.build
