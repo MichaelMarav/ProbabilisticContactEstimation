@@ -24,7 +24,7 @@ public:
     double ax_bias, ay_bias, az_bias, wx_bias, wy_bias, wz_bias;
     double ax_std, ay_std, az_std, wx_std, wy_std, wz_std;
     double ax, ay, az, wx, wy, wz;
-    double thres_ax, thres_ay, thres_az, thres_wx, thres_wy, thres_wz, Fz_thresshold;
+    double thres_ax, thres_ay, thres_az, thres_wx, thres_wy, thres_wz, Fz_thresshold, Fz_thresshold_A, Fz_thresshold_B;
     double probability, prob_ax, prob_ay, prob_az, prob_wx, prob_wy, prob_wz;
     const char* datafile_pcebag; 
     const char* datafile_pceprob;
